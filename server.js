@@ -25,10 +25,12 @@ app.get("/api/status", (req, res) => {
 
 // Importando as rotas
 const usuarioRoutes = require("./backend/routes/usuarioRoutes");
+const agendamentoRoutes = require("./backend/routes/agendamentoRoutes");
 
 // Usando as rotas na API
 // Todas as rotas de usuário terão o prefixo /api/usuarios
 app.use("/api/usuarios", usuarioRoutes);
+app.use("/api/agendamentos", agendamentoRoutes);
 
 // Iniciando o servidor
 // app.listen(...)
