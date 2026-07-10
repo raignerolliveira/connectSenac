@@ -1,6 +1,7 @@
 // frontend/js/admin.js
 
-const API_URL = 'http://localhost:3000/api';
+const FALLBACK_BASE_URL = 'http://localhost:3000/api';
+const API_URL = window.location.protocol === 'file:' ? FALLBACK_BASE_URL : `${window.location.origin}/api`;
 
 async function carregarTodosAgendamentos() {
     try {
