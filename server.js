@@ -4,7 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./backend/config/database');
 const usuarioRoutes = require('./backend/routes/usuarioRoutes');
-const agendamentoRoutes = require('./backend/routes/agendamentoRoutes'); // Adicione esta linha
+const agendamentoRoutes = require('./backend/routes/agendamentoRoutes'); 
+const cursoRoutes = require('./backend/routes/cursoRoutes'); 
+const disponibilidadeRoutes = require('./backend/routes/disponibilidadeRoutes');
 const path = require('path'); // Adicione esta linha para lidar com caminhos de pastas
 
 
@@ -29,8 +31,13 @@ app.get('/api/status', (req, res) => {
 
 // Usando as rotas na API
 // Todas as rotas de usuário terão o prefixo /api/usuarios
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/agendamentos', agendamentoRoutes); 
+app.use('/api/usuarios', usuarioRoutes)
+app.use('/api/agendamentos', agendamentoRoutes)
+app.use('/api/cursos', cursoRoutes)
+app.use('/api/disponibilidades', disponibilidadeRoutes)
+app.use('/api/dashboard', require('./backend/routes/dashboardRoutes'));
+
+
 
 // Iniciando o servidor
 app.listen(PORT, () => {
