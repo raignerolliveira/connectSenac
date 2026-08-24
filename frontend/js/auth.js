@@ -46,17 +46,35 @@ if (formLogin) {
   });
 }
 
+// Helper para máscara de telefone brasileiro
+function formatarTelefoneInput(e) {
+  let v = e.target.value.replace(/\D/g, "");
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 6) {
+    e.target.value = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+  } else if (v.length > 2) {
+    e.target.value = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+  } else if (v.length > 0) {
+    e.target.value = `(${v}`;
+  }
+}
+
+const inputTelefoneCadastro = document.getElementById("telefone");
+if (inputTelefoneCadastro) {
+  inputTelefoneCadastro.addEventListener("input", formatarTelefoneInput);
+}
+
 // Lógica de Registo
 const formCadastro = document.getElementById("formCadastro");
 if (formCadastro) {
   formCadastro.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const nome = document.getElementById("nome").value;
-    const email = document.getElementById("email").value;
-    const telefone = document.getElementById("telefone").value;
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
     const senha = document.getElementById("senha").value;
-    const confirmar_senha = document.getElementById("confirmar_senha").value; // Captura o novo campo
+    const confirmar_senha = document.getElementById("confirmar_senha").value;
 
     const consentimento_termos = document.getElementById("termoUso").checked
       ? 1
@@ -67,14 +85,17 @@ if (formCadastro) {
 
     const msgDiv = document.getElementById("mensagemCadastro");
 
-    // [NOVIDADE V2] Validação no Front-end (Client-Side Validation)
+    if (senha.length < 6) {
+      msgDiv.innerHTML = `<span class="text-danger fw-bold">A palavra-passe deve conter pelo menos 6 caracteres.</span>`;
+      return;
+    }
+
     if (senha !== confirmar_senha) {
       msgDiv.innerHTML = `<span class="text-danger fw-bold">Erro: As palavras-passe não coincidem. Verifique a digitação.</span>`;
-      return; // O comando 'return' para a execução aqui, impedindo o 'fetch' abaixo.
+      return;
     }
 
     try {
-      // Se as senhas forem iguais, enviamos o payload completo para o Back-end
       const response = await fetch(`${API_URL}/registrar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,9 +116,9 @@ if (formCadastro) {
         msgDiv.innerHTML = `<span class="text-success fw-bold">Conta criada com sucesso! A redirecionar para o login...</span>`;
         setTimeout(() => {
           window.location.href = "index.html";
-        }, 2000);
+        }, 1800);
       } else {
-        msgDiv.innerHTML = `<span class="text-danger fw-bold">${data.erro}</span>`;
+        msgDiv.innerHTML = `<span class="text-danger fw-bold">${data.erro || "Erro ao registrar."}</span>`;
       }
     } catch (error) {
       console.error("Erro na requisição:", error);

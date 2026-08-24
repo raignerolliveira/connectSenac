@@ -12,11 +12,17 @@ router.get('/usuarios', authMiddleware, autorizarPerfis('admin', 'coordenador'),
 // 2. Apenas o ADMIN supremo pode bloquear utilizadores
 router.put('/usuarios/:id/bloquear', authMiddleware, autorizarPerfis('admin'), adminController.alterarStatusBloqueio);
 
+router.put('/usuarios/:id/perfil', authMiddleware, autorizarPerfis('admin'), adminController.alterarPerfil);
+
 // 3. Apenas o ADMIN supremo pode criar outros colaboradores (Coordenador não tem este acesso)
 router.post('/colaboradores', authMiddleware, autorizarPerfis('admin'), adminController.criarColaborador);
 
 router.get('/profissionais', authMiddleware, autorizarPerfis('admin', 'coordenador'), adminController.listarProfissionais);
 
 router.delete('/usuarios/:id', authMiddleware, autorizarPerfis('admin', 'coordenador'), adminController.excluirUsuario);
+
+router.get('/pautas', authMiddleware, autorizarPerfis('admin', 'coordenador'), adminController.listarPautasGlobais);
+
+
 
 module.exports = router;

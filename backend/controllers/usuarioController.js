@@ -9,6 +9,14 @@ const crypto = require('crypto'); // Biblioteca nativa do Node.js para criptogra
 exports.registrar = async (req, res) => {
     const { nome, email, telefone, senha, confirmar_senha, consentimento_termos, consentimento_imagem } = req.body;
 
+    if (!nome || !email || !telefone || !senha || !confirmar_senha) {
+        return res.status(400).json({ erro: 'Todos os campos obrigatórios devem ser preenchidos.' });
+    }
+
+    if (senha.length < 6) {
+        return res.status(400).json({ erro: 'A palavra-passe deve ter pelo menos 6 caracteres.' });
+    }
+
     // [Funcionalidade 1.2] Validação de Confirmação de Palavra-passe
     if (senha !== confirmar_senha) {
         return res.status(400).json({ erro: 'As palavras-passe não coincidem.' });
@@ -157,6 +165,14 @@ exports.solicitarRecuperacao = async (req, res) => {
 // 4. REDEFINIR A PALAVRA-PASSE
 exports.redefinirSenha = async (req, res) => {
     const { token, nova_senha, confirmar_senha } = req.body;
+
+    if (!token || !nova_senha || !confirmar_senha) {
+        return res.status(400).json({ erro: 'Todos os campos são obrigatórios.' });
+    }
+
+    if (nova_senha.length < 6) {
+        return res.status(400).json({ erro: 'A nova palavra-passe deve ter pelo menos 6 caracteres.' });
+    }
 
     if (nova_senha !== confirmar_senha) {
         return res.status(400).json({ erro: 'As palavras-passe não coincidem.' });

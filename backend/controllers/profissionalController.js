@@ -74,3 +74,45 @@ exports.concluirAgendamento = async (req, res) => {
         res.status(500).json({ erro: 'Erro interno ao processar a pauta de presença.' });
     }
 };
+
+// Cancelar a inscrição de um modelo (Falta/Desistência)
+exports.cancelarInscricao = async (req, res) => {
+    const { id } = req.params;
+    const profissional_id = req.usuario.id;
+
+    try {
+        const { data: agendamento, error: erroBusca } = await supabase
+            .from('agendamentos')
+            .select('id, status, disponibilidades(id, vagas_ocupadas, cursos(profissional_id))')
+            .eq('id', id)
+            .single();
+
+        if (erroBusca || !agendamento) return res.status(404).json({ erro: 'Agendamento não encontrado.' });
+        if (agendamento.disponibilidades?.cursos?.profissional_id !== profissional_id) {
+            return res.status(403).json({ erro: 'Não tem permissão para alterar a pauta de outro professor.' });
+        }
+        if (agendamento.status !== 'agendado') {
+            return res.status(400).json({ erro: 'Apenas agendamentos ativos podem ser cancelados.' });
+        }
+
+        const { error: erroUpdate } = await supabase
+            .from('agendamentos')
+            .update({ status: 'cancelado' })
+            .eq('id', id);
+
+        if (erroUpdate) throw erroUpdate;
+
+        // Decrementa as vagas ocupadas para liberar a vaga novamente
+        if (agendamento.disponibilidades?.id) {
+            await supabase
+                .from('disponibilidades')
+                .update({ vagas_ocupadas: Math.max(0, (agendamento.disponibilidades.vagas_ocupadas || 1) - 1) })
+                .eq('id', agendamento.disponibilidades.id);
+        }
+
+        res.json({ mensagem: 'Inscrição cancelada. A vaga foi libertada no sistema.' });
+    } catch (error) {
+        console.error('Erro ao cancelar inscrição:', error.message);
+        res.status(500).json({ erro: 'Erro ao cancelar a inscrição.' });
+    }
+};

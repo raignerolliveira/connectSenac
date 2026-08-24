@@ -48,6 +48,10 @@ exports.criarColaborador = async (req, res) => {
         return res.status(400).json({ erro: 'Todos os campos são obrigatórios.' });
     }
 
+    if (senha.length < 6) {
+        return res.status(400).json({ erro: 'A senha do colaborador deve ter pelo menos 6 caracteres.' });
+    }
+
     if (!['admin', 'coordenador', 'profissional'].includes(perfil)) {
         return res.status(400).json({ erro: 'Perfil de colaborador inválido.' });
     }
@@ -146,5 +150,54 @@ exports.excluirUsuario = async (req, res) => {
     } catch (error) {
         console.error('Erro ao excluir usuário:', error.message);
         res.status(500).json({ erro: 'Erro interno ao realizar exclusão.' });
+    }
+};
+
+// 5. Alterar Perfil do Utilizador (Promover/Despromover)
+exports.alterarPerfil = async (req, res) => {
+    const { id } = req.params;
+    const { perfil } = req.body;
+    const executorId = req.usuario.id;
+
+    if (id === executorId) {
+        return res.status(400).json({ erro: 'Não pode alterar o seu próprio nível de acesso.' });
+    }
+
+    if (!['admin', 'coordenador', 'profissional', 'candidato'].includes(perfil)) {
+        return res.status(400).json({ erro: 'Perfil inválido.' });
+    }
+
+    try {
+        const { error } = await supabase
+            .from('usuarios')
+            .update({ perfil })
+            .eq('id', id);
+
+        if (error) throw error;
+        res.json({ mensagem: `Cargo do utilizador atualizado para '${perfil}' com sucesso!` });
+    } catch (error) {
+        console.error('Erro ao alterar cargo:', error.message);
+        res.status(500).json({ erro: 'Erro ao alterar o perfil do utilizador.' });
+    }
+};
+
+exports.listarPautasGlobais = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('cursos')
+            .select(`
+                id, nome, usuarios!cursos_profissional_id_fkey(nome),
+                disponibilidades (
+                    id, data_hora, vagas_totais, vagas_ocupadas,
+                    agendamentos ( id, status, usuarios ( nome, telefone ) )
+                )
+            `)
+            .eq('status', 'ativo')
+            .order('nome');
+
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ erro: 'Erro ao carregar as pautas globais.' });
     }
 };

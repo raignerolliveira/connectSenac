@@ -31,17 +31,29 @@ app.get('/api/status', (req, res) => {
 
 
 // Usando as rotas na API
-// Todas as rotas de usuário terão o prefixo /api/usuarios
-app.use('/api/usuarios', usuarioRoutes)
-app.use('/api/agendamentos', agendamentoRoutes)
-app.use('/api/cursos', cursoRoutes)
-app.use('/api/disponibilidades', disponibilidadeRoutes)
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/agendamentos', agendamentoRoutes);
+app.use('/api/cursos', cursoRoutes);
+app.use('/api/disponibilidades', disponibilidadeRoutes);
 app.use('/api/dashboard', require('./backend/routes/dashboardRoutes'));
 app.use('/api/admin', require('./backend/routes/adminRoutes'));
 app.use('/api/profissional', require('./backend/routes/profissionalRoutes'));
 app.use('/api/feedbacks', require('./backend/routes/feedbackRoutes'));
 
+// Rota 404 para endpoints de API não encontrados
+app.use('/api', (req, res) => {
+    res.status(404).json({ erro: `Endpoint da API não encontrado: ${req.method} ${req.originalUrl}` });
+});
 
+// Middleware Global de Tratamento de Erros
+app.use((err, req, res, next) => {
+    console.error('❌ [ERRO NÃO TRATADO]:', err.stack || err.message);
+    res.status(err.status || 500).json({
+        erro: process.env.NODE_ENV === 'production'
+            ? 'Ocorreu um erro interno no servidor.'
+            : (err.message || 'Erro interno no servidor.')
+    });
+});
 
 // Iniciando o servidor
 app.listen(PORT, () => {
