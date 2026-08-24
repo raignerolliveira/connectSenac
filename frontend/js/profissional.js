@@ -10,16 +10,16 @@ const token = localStorage.getItem("token");
 
 if (!token) {
   window.location.href = "index.html";
-}
-
-try {
-  const payloadToken = JSON.parse(atob(token.split(".")[1]));
-  const nomeProfEl = document.getElementById("nomeProf");
-  if (nomeProfEl && payloadToken && payloadToken.email) {
-    nomeProfEl.textContent = payloadToken.email.split("@")[0];
+} else {
+  try {
+    const payloadToken = JSON.parse(atob(token.split(".")[1]));
+    const nomeProfEl = document.getElementById("nomeProf");
+    if (nomeProfEl && payloadToken && (payloadToken.nome || payloadToken.email)) {
+      nomeProfEl.textContent = payloadToken.nome || payloadToken.email.split("@")[0];
+    }
+  } catch (e) {
+    console.error("Erro ao decodificar token:", e);
   }
-} catch (e) {
-  console.error("Erro ao decodificar token:", e);
 }
 
 const btnSair = document.getElementById("btnSair");
@@ -33,6 +33,8 @@ if (btnSair) {
 async function carregarMinhasTurmas() {
   const accordion = document.getElementById("accordionTurmas");
   if (!accordion) return;
+
+  if (!token) return;
 
   try {
     const response = await fetch(`${API_URL}/profissional/minhas-turmas`, {
@@ -83,7 +85,7 @@ async function carregarMinhasTurmas() {
                   acoesHTML = `
                     <div class="d-flex gap-1 justify-content-center">
                       <button class="btn btn-sm btn-outline-success fw-bold px-3" onclick="concluirServico('${ag.id}')" title="Confirmar Presença"><i class="bi bi-check-lg me-1"></i>Presente</button>
-                      <button class="btn btn-sm btn-outline-danger fw-bold px-2" onclick="cancelarAluno('${ag.id}', '${ag.usuarios ? ag.usuarios.nome : 'Modelo'}')" title="Cancelar / Falta"><i class="bi bi-x-lg"></i></button>
+                      <button class="btn btn-sm btn-outline-danger fw-bold px-2" onclick="cancelarAluno('${ag.id}', '${ag.usuarios ? (ag.usuarios.nome || 'Modelo') : 'Modelo'}')" title="Cancelar / Falta"><i class="bi bi-x-lg"></i></button>
                     </div>
                   `;
                 } else if (ag.status === "concluido") {
@@ -92,9 +94,9 @@ async function carregarMinhasTurmas() {
                   acoesHTML = `<span class="badge badge-soft-secondary px-3 py-2">${(ag.status || '').toUpperCase()}</span>`;
                 }
 
-                const nomeUsuario = ag.usuarios ? ag.usuarios.nome : "Modelo";
-                const emailUsuario = ag.usuarios ? ag.usuarios.email : "-";
-                const telUsuario = ag.usuarios ? ag.usuarios.telefone : "";
+                const nomeUsuario = ag.usuarios ? (ag.usuarios.nome || "Modelo") : "Modelo";
+                const emailUsuario = ag.usuarios ? (ag.usuarios.email || "-") : "-";
+                const telUsuario = ag.usuarios ? (ag.usuarios.telefone || "") : "";
                 const telLimpo = telUsuario ? telUsuario.replace(/\D/g, "") : "";
                 const msgProf = encodeURIComponent(`Olá ${nomeUsuario}, aqui é do Senac referente ao seu agendamento.`);
 
@@ -210,6 +212,11 @@ async function cancelarAluno(agendamentoId, nome) {
   }
 }
 
+window.concluirServico = concluirServico;
+window.cancelarAluno = cancelarAluno;
+
 document.addEventListener("DOMContentLoaded", () => {
-  carregarMinhasTurmas();
+  if (token) {
+    carregarMinhasTurmas();
+  }
 });
