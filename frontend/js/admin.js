@@ -68,25 +68,25 @@ function renderizarTabelaUtilizadores(lista){
     tbody.innerHTML = '';
  
     if (lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Nenhum utilizador encontrado com estes filtros.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="bi bi-person-x fs-3 d-block mb-2"></i>Nenhum utilizador encontrado com estes filtros.</td></tr>';
         return;
     }
  
     lista.forEach(user => {
         const statusBadge = user.is_bloqueado
-            ? '<span class="badge bg-danger">Bloqueado</span>'
-            : '<span class="badge bg-success">Ativo</span>';
+            ? '<span class="badge badge-soft-danger px-2 py-1"><i class="bi bi-lock-fill me-1"></i>Bloqueado</span>'
+            : '<span class="badge badge-soft-success px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Ativo</span>';
  
         // 1. Mensagem de WhatsApp Dinâmica
-        const telLimpo = user.telefone.replace(/\D/g, ''); // Remove formatações
+        const telLimpo = user.telefone ? user.telefone.replace(/\D/g, '') : '';
         const msgZap = encodeURIComponent(`Olá, ${user.nome}! Aqui é a Coordenação do Connect Senac.`);
-        const btnZap = `<a href="https://wa.me/55${telLimpo}?text=${msgZap}" target="_blank" class="btn btn-sm btn-outline-success ms-1" title="Enviar WhatsApp">💬</a>`;
+        const btnZap = telLimpo ? `<a href="https://wa.me/55${telLimpo}?text=${msgZap}" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2" title="Conversar no WhatsApp"><i class="bi bi-whatsapp fs-6"></i></a>` : '';
  
-        // 2. Select Dinâmico de Perfis (Apenas Admin vê como <select>, os outros veem como texto)
-        let seletorPerfil = `<span class="badge bg-secondary">${user.perfil.toUpperCase()}</span>`;
+        // 2. Select Dinâmico de Perfis
+        let seletorPerfil = `<span class="badge badge-soft-secondary px-2 py-1">${(user.perfil || '').toUpperCase()}</span>`;
         if (payloadToken.perfil === 'admin') {
             seletorPerfil = `
-                <select class="form-select form-select-sm" style="width: 120px;" onchange="alterarPerfil('${user.id}', this.value)">
+                <select class="form-select form-select-sm border-secondary-subtle" style="min-width: 110px;" onchange="alterarPerfil('${user.id}', this.value)">
                     <option value="candidato" ${user.perfil === 'candidato' ? 'selected' : ''}>Candidato</option>
                     <option value="profissional" ${user.perfil === 'profissional' ? 'selected' : ''}>Professor</option>
                     <option value="coordenador" ${user.perfil === 'coordenador' ? 'selected' : ''}>Coord.</option>
@@ -96,28 +96,30 @@ function renderizarTabelaUtilizadores(lista){
         }
  
         const btnBloqueio = payloadToken.perfil === 'admin'
-            ? `<button class="btn btn-sm ${user.is_bloqueado ? 'btn-outline-success' : 'btn-outline-danger'} ms-1" onclick="toggleBloqueio('${user.id}', ${user.is_bloqueado})">🔒</button>` : '';
+            ? `<button class="btn btn-sm ${user.is_bloqueado ? 'btn-outline-success' : 'btn-outline-warning'} border-0 px-2" onclick="toggleBloqueio('${user.id}', ${user.is_bloqueado})" title="${user.is_bloqueado ? 'Desbloquear' : 'Bloquear'}"><i class="bi ${user.is_bloqueado ? 'bi-unlock-fill' : 'bi-lock-fill'}"></i></button>` : '';
  
         const podeExcluir = payloadToken.perfil === 'admin' || (payloadToken.perfil === 'coordenador' && user.perfil === 'candidato');
         const btnExcluir = podeExcluir
-            ? `<button class="btn btn-sm btn-danger ms-1" onclick="excluirUsuario('${user.id}', '${user.nome}')">🗑️</button>` : '';
+            ? `<button class="btn btn-sm btn-outline-danger border-0 px-2" onclick="excluirUsuario('${user.id}', '${user.nome}')" title="Excluir Conta"><i class="bi bi-trash-fill"></i></button>` : '';
  
         const row = `
             <tr>
-                <td><div class="fw-bold">${user.nome}</div></td>
+                <td><div class="fw-bold text-dark">${user.nome}</div></td>
                 <td>
-                    <div class="small">${user.email}</div>
-                    <div class="text-muted small">${user.telefone}</div>
+                    <div class="small fw-semibold text-secondary">${user.email}</div>
+                    <div class="text-muted small">${user.telefone || '-'}</div>
                 </td>
                 <td>${seletorPerfil}</td>
-                <td><span class="text-muted small">${user.cursos_ativos || '-'}</span></td>
-                <td class="text-center fw-bold text-primary">${user.total_agendados}</td>
-                <td class="text-center fw-bold text-success">${user.total_concluidos}</td>
-                <td class="text-center fw-bold text-danger">${user.total_cancelados}</td>
+                <td><span class="badge badge-soft-primary">${user.cursos_ativos || '-'}</span></td>
+                <td class="text-center fw-bold text-primary">${user.total_agendados || 0}</td>
+                <td class="text-center fw-bold text-success">${user.total_concluidos || 0}</td>
+                <td class="text-center fw-bold text-danger">${user.total_cancelados || 0}</td>
                 <td class="text-end text-nowrap">
-                    ${btnZap}
-                    ${btnBloqueio}
-                    ${btnExcluir}
+                    <div class="d-inline-flex gap-1">
+                        ${btnZap}
+                        ${btnBloqueio}
+                        ${btnExcluir}
+                    </div>
                 </td>
             </tr>
         `;
@@ -467,26 +469,27 @@ async function carregarCursosAdmin(){
         cursos.forEach(curso => {
             const profNome = curso.usuarios ? curso.usuarios.nome : 'Sem Professor';
             const statusBadge = curso.status === 'ativo'
-                ? '<span class="badge bg-success">Ativo</span>'
-                : '<span class="badge bg-secondary">Arquivado</span>';
- 
-            // O arquivamento é um Soft Delete. Só mostramos o botão se estiver ativo.
+                ? '<span class="badge badge-soft-success px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Ativo</span>'
+                : '<span class="badge badge-soft-secondary px-2 py-1"><i class="bi bi-archive-fill me-1"></i>Arquivado</span>';
+
             const btnArquivar = curso.status === 'ativo'
-                ? `<button class="btn btn-sm btn-outline-danger ms-1" onclick="arquivarCurso('${curso.id}', '${curso.nome}')">Arquivar</button>`
+                ? `<button class="btn btn-sm btn-outline-danger border-0 px-2" onclick="arquivarCurso('${curso.id}', '${curso.nome}')" title="Arquivar Curso"><i class="bi bi-archive-fill"></i></button>`
                 : '';
- 
+
             const row = `
                 <tr>
                     <td>
                         <div class="fw-bold text-dark">${curso.nome}</div>
-                        <div class="small text-muted text-truncate" style="max-width: 200px;">${curso.descricao}</div>
+                        <div class="small text-muted text-truncate" style="max-width: 260px;">${curso.descricao}</div>
                     </td>
-                    <td>${profNome}</td>
-                    <td class="small">${curso.localizacao || '-'}</td>
+                    <td><div class="small fw-semibold text-secondary"><i class="bi bi-person-badge text-primary me-1"></i>${profNome}</div></td>
+                    <td class="small text-muted"><i class="bi bi-geo-alt text-secondary me-1"></i>${curso.localizacao || '-'}</td>
                     <td>${statusBadge}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary" onclick='abrirModalEdicao(${JSON.stringify(curso).replace(/'/g, "&#39;")})'>Editar</button>
-                        ${btnArquivar}
+                    <td class="text-end text-nowrap">
+                        <div class="d-inline-flex gap-1">
+                            <button class="btn btn-sm btn-soft-primary px-3 fw-bold" onclick='abrirModalEdicao(${JSON.stringify(curso).replace(/'/g, "&#39;")})'><i class="bi bi-pencil-square me-1"></i>Editar</button>
+                            ${btnArquivar}
+                        </div>
                     </td>
                 </tr>
             `;

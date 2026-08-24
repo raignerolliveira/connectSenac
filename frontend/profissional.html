@@ -1,67 +1,135 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel do Docente - Connect Senac</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        background-color: #f4f7f6;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-      .navbar-brand {
-        font-weight: 700;
-      }
-      .section-title {
-        color: #004a8d;
-        font-weight: 700;
-      }
-      .accordion-button:not(.collapsed) {
-        background-color: #e9f2fa;
-        color: #004a8d;
-        font-weight: bold;
-      }
-    </style>
-  </head>
-  <body>
-    <nav
-      class="navbar navbar-expand-lg navbar-dark shadow-sm"
-      style="background-color: #004a8d"
-    >
-      <div class="container">
-        <a class="navbar-brand" href="#"
-          >Connect Senac
-          <span class="badge bg-light text-dark ms-2"
-            >Área do Professor</span
-          ></a
-        >
-        <div>
-          <a href="painel.html" class="btn btn-sm btn-outline-warning me-2 fw-bold">👁️ Ver Visão do Modelo</a>
-          <button class="btn btn-outline-light btn-sm" id="btnSair">Sair</button>
-        </div>
-      </div>
-    </nav>
+﻿<!doctype html>
+<html lang=pt-BR>
+<head>
+    <meta charset=UTF-8 />
+    <meta name=viewport content=width=device-width, initial-scale=1.0 />
+    <title>Connect Senac - Painel do Docente</title>
+    <!-- Google Fonts -->
+    <link rel=preconnect href=https://fonts.googleapis.com>
+    <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+    <link href=https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap rel=stylesheet>
+    <!-- Bootstrap 5 & Icons -->
+    <link href=https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css rel=stylesheet>
+    <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css>
+    <!-- Premium Design System -->
+    <link rel=stylesheet href=css/style.css>
+</head>
+<body>
+    <div class=app-shell>
+        <!-- Sidebar Navigation -->
+        <aside class=app-sidebar id=appSidebar>
+            <div class=sidebar-brand>
+                <div class=sidebar-logo-icon>
+                    <i class=bi bi-mortarboard-fill></i>
+                </div>
+                <h3 class=sidebar-brand-title>Connect <span>Senac</span></h3>
+            </div>
 
-    <div class="container py-5">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="section-title">👨‍🏫 As Minhas Turmas e Listas de Modelos</h4>
-        <span class="text-muted small"
-          >Ligado como: <strong id="nomeProf">--</strong></span
-        >
-      </div>
+            <div class=sidebar-content>
+                <div>
+                    <div class=sidebar-section-title>Navegação Docente</div>
+                    <ul class=sidebar-nav>
+                        <li>
+                            <a class=sidebar-link active href=#turmas>
+                                <i class=bi bi-person-lines-fill></i>
+                                <span>Minhas Turmas & Pautas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class=sidebar-link href=painel.html>
+                                <i class=bi bi-eye></i>
+                                <span>Ver Visão do Modelo</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-      <div class="accordion shadow-sm" id="accordionTurmas">
-        <div class="text-center text-muted p-5">
-          A carregar a pauta de presenças...
-        </div>
-      </div>
+                <div>
+                    <div class=sidebar-section-title>Instruções Rápidas</div>
+                    <div class=p-3 bg-white bg-opacity-10 rounded-3 text-white-50 small>
+                        <div class=d-flex align-items-center gap-2 mb-1 text-white fw-bold>
+                            <i class=bi bi-check2-circle text-success></i> Confirmação de Presença
+                        </div>
+                        Clique em ✅ quando o modelo comparecer para liberar a avaliação ou ❌ para liberar a vaga em caso de falta.
+                    </div>
+                </div>
+            </div>
+
+            <div class=sidebar-footer>
+                <div class=d-flex align-items-center justify-content-between>
+                    <div class=user-profile-badge>
+                        <div class=user-avatar>
+                            <i class=bi bi-person-workspace></i>
+                        </div>
+                        <div class=user-info>
+                            <div class=user-name id=nomeProf>Docente Senac</div>
+                            <div class=user-role>Professor(a)</div>
+                        </div>
+                    </div>
+                    <button class=btn btn-sm btn-outline-light border-0 text-white-50 p-2 id=btnSair title=Sair do Sistema>
+                        <i class=bi bi-box-arrow-right fs-5></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class=app-main>
+            <!-- Topbar -->
+            <header class=app-topbar>
+                <div class=topbar-left>
+                    <button class=sidebar-toggle-btn id=sidebarToggle onclick=toggleSidebar()>
+                        <i class=bi bi-list></i>
+                    </button>
+                    <div>
+                        <h4 class=topbar-title>Central do Professor</h4>
+                    </div>
+                </div>
+                <div class=topbar-right>
+                    <a href=painel.html class=btn btn-sm btn-soft-primary fw-bold>
+                        <i class=bi bi-eye me-1></i> Visão do Modelo
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class=app-content>
+                <div class=card-premium p-4 mb-4 style=background: linear-gradient(135deg, #003666 0%, #004a8d 100%); color: white;>
+                    <div class=d-flex flex-wrap justify-content-between align-items-center gap-3>
+                        <div>
+                            <span class=badge bg-warning text-dark fw-bold mb-2 px-3 py-1>👨‍🏫 Diário de Classe Digital</span>
+                            <h3 class=text-white fw-bold font-heading mb-1>Pautas e Listas de Presença</h3>
+                            <p class=text-white-50 mb-0 small>Acompanhe as inscrições de modelos para as suas aulas práticas em tempo real.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class=card-premium p-4 id=turmas>
+                    <div class=d-flex justify-content-between align-items-center mb-4>
+                        <h5 class=card-title-premium>
+                            <i class=bi bi-journal-bookmark-fill text-primary></i>
+                            Cursos e Horários Sob Sua Responsabilidade
+                        </h5>
+                    </div>
+
+                    <div class=accordion shadow-none id=accordionTurmas>
+                        <div class=text-center text-muted p-5>
+                            <div class=spinner-border spinner-border-sm text-primary me-2></div>
+                            A carregar a pauta de presenças...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/profissional.js"></script>
-  </body>
+    <script src=https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('appSidebar');
+            if (sidebar) sidebar.classList.toggle('show');
+        }
+    </script>
+    <script src=js/profissional.js></script>
+</body>
 </html>
