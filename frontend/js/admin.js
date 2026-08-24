@@ -4,23 +4,32 @@ const FALLBACK_BASE_URL = 'http://localhost:3000/api';
 const API_URL = window.location.protocol === 'file:' ? FALLBACK_BASE_URL : `${window.location.origin}/api`;
  
 const token = localStorage.getItem('token');
-if (!token) window.location.href = 'index.html';
- 
-// Descodificar o JWT para saber o nome e perfil do Admin conectado
-const payloadToken = JSON.parse(atob(token.split('.')[1]));
-document.getElementById('userNome').textContent = payloadToken.email.split('@')[0];
-document.getElementById('userPerfil').textContent = payloadToken.perfil.toUpperCase();
- 
-// Se o utilizador for Coordenador, ocultamos a Tab de criar novos colaboradores (RBAC)
-if (payloadToken.perfil === 'coordenador') {
-    const equipaTab = document.getElementById('equipa-tab');
-    if(equipaTab) equipaTab.style.display = 'none';
+if (!token) {
+    window.location.href = 'index.html';
+} else {
+    try {
+        const payloadToken = JSON.parse(atob(token.split('.')[1]));
+        const userNomeEl = document.getElementById('userNome');
+        const userPerfilEl = document.getElementById('userPerfil');
+        if (userNomeEl && payloadToken.email) userNomeEl.textContent = payloadToken.nome || payloadToken.email.split('@')[0];
+        if (userPerfilEl && payloadToken.perfil) userPerfilEl.textContent = payloadToken.perfil.toUpperCase();
+        
+        if (payloadToken.perfil === 'coordenador') {
+            const equipaTab = document.getElementById('equipa-tab');
+            if(equipaTab) equipaTab.style.display = 'none';
+        }
+    } catch(e) {
+        console.error('Erro ao ler token no admin:', e);
+    }
 }
  
-document.getElementById('btnSair').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    window.location.href = 'index.html';
-});
+const btnSair = document.getElementById('btnSair');
+if (btnSair) {
+    btnSair.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    });
+}
  
 // ============================================================================
 // 1. CARREGAR MÉTRICAS DO DASHBOARD
@@ -674,10 +683,17 @@ async function carregarPautasGlobais(){
     }
 }
 
-// Chame essa função na inicialização do arquivo (no final do admin.js)
-carregarProfissionaisNoSelect();
+// Expor funções no escopo global para eventos onclick
+window.toggleBloqueio = toggleBloqueio;
+window.excluirUsuario = excluirUsuario;
+window.arquivarCurso = arquivarCurso;
+window.abrirModalEdicao = abrirModalEdicao;
+
 // Inicialização de ecrã
-carregarMetricas();
-carregarCursosNoSelect();
-carregarUtilizadores();
-carregarPautasGlobais();
+if (token) {
+    carregarProfissionaisNoSelect();
+    carregarMetricas();
+    carregarCursosNoSelect();
+    carregarUtilizadores();
+    carregarPautasGlobais();
+}
