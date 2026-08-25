@@ -466,32 +466,5 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarCursos();
     carregarMeusAgendamentos();
     carregarMeusFeedbacks();
-
-    try {
-      const payloadToken = JSON.parse(atob(token.split(".")[1]));
-      const sidebarNav = document.querySelector(".sidebar-nav");
-
-      if (sidebarNav) {
-        if (payloadToken.perfil === "admin" || payloadToken.perfil === "coordenador") {
-          sidebarNav.innerHTML += `
-            <li class="mt-3 pt-2 border-top border-white border-opacity-10">
-              <a class="sidebar-link text-warning fw-bold" href="admin.html">
-                <i class="bi bi-arrow-left-circle-fill text-warning"></i>
-                <span>Painel Admin</span>
-              </a>
-            </li>
-          `;
-        } else if (payloadToken.perfil === "profissional") {
-          sidebarNav.innerHTML += `
-            <li class="mt-3 pt-2 border-top border-white border-opacity-10">
-              <a class="sidebar-link text-warning fw-bold" href="profissional.html">
-                <i class="bi bi-arrow-left-circle-fill text-warning"></i>
-                <span>Painel Professor</span>
-              </a>
-            </li>
-          `;
-        }
-      }
-    } catch (e) {}
   }
 });
