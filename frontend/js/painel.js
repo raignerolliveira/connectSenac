@@ -71,13 +71,13 @@ async function carregarCursos() {
                         <i class="bi bi-geo-alt-fill text-warning me-1"></i> ${localCurto}
                     </div>
                 </div>
-                <div class="p-4 d-flex flex-column flex-grow-1">
-                    <div class="d-flex align-items-center gap-2 mb-2 text-muted small fw-semibold">
+                <div class="p-3 d-flex flex-column flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-1.5 text-muted small fw-semibold" style="font-size: 0.78rem;">
                         <i class="bi bi-person-badge text-primary"></i> ${profNome}
                     </div>
-                    <h5 class="fw-bold font-heading mb-2 text-dark">${curso.nome}</h5>
-                    <p class="text-secondary small flex-grow-1 mb-4" style="line-height: 1.5;">${(curso.descricao || "").substring(0, 95)}...</p>
-                    <button class="btn btn-soft-primary w-100 py-2 fw-bold mt-auto">
+                    <h5 class="fw-bold font-heading mb-1.5 text-dark" style="font-size: 0.98rem;">${curso.nome}</h5>
+                    <p class="text-secondary small flex-grow-1 mb-3" style="font-size: 0.82rem; line-height: 1.45;">${(curso.descricao || "").substring(0, 90)}...</p>
+                    <button class="btn btn-soft-primary w-100 py-1.5 fw-bold mt-auto" style="font-size: 0.82rem;">
                         <i class="bi bi-info-circle me-1"></i> Ver Detalhes & Vagas
                     </button>
                 </div>
@@ -88,7 +88,7 @@ async function carregarCursos() {
     });
   } catch (error) {
     divCursos.innerHTML =
-      '<div class="col-12"><div class="alert alert-danger rounded-3">Erro ao carregar catálogo de cursos.</div></div>';
+      '<div class="col-12"><div class="alert alert-danger rounded-3 p-3 text-center small">Erro ao carregar catálogo de cursos.</div></div>';
   }
 }
 
@@ -277,7 +277,7 @@ async function carregarMeusAgendamentos() {
     divAgendamentos.innerHTML = "";
     if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
       divAgendamentos.innerHTML =
-        '<div class="col-12"><div class="p-4 bg-light rounded-4 text-center text-muted"><i class="bi bi-calendar-x fs-2 d-block mb-2"></i>Você não possui nenhum agendamento ativo no momento.</div></div>';
+        '<div class="col-12"><div class="p-3 bg-light rounded-3 text-center text-muted small"><i class="bi bi-calendar-x fs-3 d-block mb-1"></i>Você não possui nenhum agendamento ativo no momento.</div></div>';
       return;
     }
 
@@ -291,30 +291,30 @@ async function carregarMeusAgendamentos() {
       let acoesHTML = "";
 
       if (ag.status === "agendado") {
-        badge = '<span class="badge badge-soft-primary px-3 py-2"><i class="bi bi-check-circle me-1"></i> Confirmado</span>';
-        acoesHTML = `<button class="btn btn-sm btn-outline-danger w-100 fw-bold py-2 mt-3" onclick="cancelarAgendamento('${ag.id}')"><i class="bi bi-x-circle me-1"></i> Cancelar Inscrição</button>`;
+        badge = '<span class="badge badge-soft-primary px-2.5 py-1" style="font-size: 0.72rem;"><i class="bi bi-check-circle me-1"></i> Confirmado</span>';
+        acoesHTML = `<button class="btn btn-sm btn-outline-danger w-100 fw-bold py-1.5 mt-2" style="font-size: 0.8rem;" onclick="cancelarAgendamento('${ag.id}')"><i class="bi bi-x-circle me-1"></i> Cancelar Inscrição</button>`;
       } else if (ag.status === "cancelado") {
-        badge = '<span class="badge badge-soft-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i> Cancelado</span>';
+        badge = '<span class="badge badge-soft-danger px-2.5 py-1" style="font-size: 0.72rem;"><i class="bi bi-x-circle me-1"></i> Cancelado</span>';
       } else if (ag.status === "concluido") {
-        badge = '<span class="badge badge-soft-success px-3 py-2"><i class="bi bi-patch-check me-1"></i> Concluído</span>';
-        acoesHTML = `<button class="btn btn-sm btn-accent w-100 fw-bold py-2 mt-3" onclick="abrirModalFeedback('${ag.id}')"><i class="bi bi-star-fill me-1"></i> Avaliar Serviço</button>`;
+        badge = '<span class="badge badge-soft-success px-2.5 py-1" style="font-size: 0.72rem;"><i class="bi bi-patch-check me-1"></i> Concluído</span>';
+        acoesHTML = `<button class="btn btn-sm btn-accent w-100 fw-bold py-1.5 mt-2" style="font-size: 0.8rem;" onclick="abrirModalFeedback('${ag.id}')"><i class="bi bi-star-fill me-1"></i> Avaliar Serviço</button>`;
       }
 
       const card = `
         <div class="col-12 col-md-6 col-xl-4">
-            <div class="card-premium p-4 h-100 d-flex flex-column justify-content-between">
+            <div class="card-premium p-3 h-100 d-flex flex-column justify-content-between">
                 <div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold font-heading text-dark mb-0 text-truncate" title="${cursoNome}">${cursoNome}</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold font-heading text-dark mb-0 text-truncate" style="font-size: 0.92rem;" title="${cursoNome}">${cursoNome}</h6>
                         ${badge}
                     </div>
-                    <div class="text-secondary small mb-2">
+                    <div class="text-secondary small mb-2" style="font-size: 0.82rem;">
                         <i class="bi bi-calendar-event text-primary me-1"></i> Horário: <strong>${dataHora}</strong>
                     </div>
                 </div>
                 <div>
                     ${acoesHTML}
-                    <div id="msg-canc-${ag.id}" class="small text-center mt-2"></div>
+                    <div id="msg-canc-${ag.id}" class="small text-center mt-1.5" style="font-size: 0.76rem;"></div>
                 </div>
             </div>
         </div>
@@ -323,7 +323,7 @@ async function carregarMeusAgendamentos() {
     });
   } catch (error) {
     divAgendamentos.innerHTML =
-      '<div class="col-12"><div class="alert alert-danger rounded-3">Erro ao carregar histórico de agendamentos.</div></div>';
+      '<div class="col-12"><div class="alert alert-danger rounded-3 p-3 text-center small">Erro ao carregar histórico de agendamentos.</div></div>';
   }
 }
 
@@ -422,7 +422,7 @@ async function carregarMeusFeedbacks() {
     divFeedbacks.innerHTML = "";
     if (!Array.isArray(feedbacks) || feedbacks.length === 0) {
       divFeedbacks.innerHTML =
-        '<div class="col-12"><div class="p-4 bg-light rounded-4 text-center text-muted"><i class="bi bi-chat-left-dots fs-2 d-block mb-2"></i>Você ainda não realizou nenhuma avaliação de atendimento.</div></div>';
+        '<div class="col-12"><div class="p-3 bg-light rounded-3 text-center text-muted small"><i class="bi bi-chat-left-dots fs-3 d-block mb-1"></i>Você ainda não realizou nenhuma avaliação de atendimento.</div></div>';
       return;
     }
 
@@ -435,13 +435,13 @@ async function carregarMeusFeedbacks() {
 
       const card = `
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card-premium p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-bold font-heading text-dark text-truncate">${f.curso_nome || "Curso"}</span>
-                    <span class="badge badge-soft-secondary">${dataFormatada}</span>
+            <div class="card-premium p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold font-heading text-dark text-truncate" style="font-size: 0.9rem;">${f.curso_nome || "Curso"}</span>
+                    <span class="badge badge-soft-secondary" style="font-size: 0.7rem;">${dataFormatada}</span>
                 </div>
-                <div class="mb-3 fs-5">${estrelas}</div>
-                <p class="text-secondary small mb-0 fst-italic bg-light p-3 rounded-3">${comentarioTexto}</p>
+                <div class="mb-2" style="font-size: 0.88rem;">${estrelas}</div>
+                <p class="text-secondary small mb-0 fst-italic bg-light p-2.5 rounded-3" style="font-size: 0.8rem;">${comentarioTexto}</p>
             </div>
         </div>
       `;
@@ -449,7 +449,7 @@ async function carregarMeusFeedbacks() {
     });
   } catch (error) {
     divFeedbacks.innerHTML =
-      '<div class="col-12"><div class="alert alert-danger rounded-3">Erro ao carregar histórico de avaliações.</div></div>';
+      '<div class="col-12"><div class="alert alert-danger rounded-3 p-3 text-center small">Erro ao carregar histórico de avaliações.</div></div>';
   }
 }
 
