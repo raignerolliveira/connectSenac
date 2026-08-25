@@ -595,7 +595,6 @@ if (formEditarCurso) {
 // ==========================================
 async function carregarPautasGlobais(){
     const accordion = document.getElementById('accordionPautasGlobais');
-    // Se o elemento não existir na tela (por segurança), interrompe a função
     if (!accordion) return;
 
     try {
@@ -606,19 +605,16 @@ async function carregarPautasGlobais(){
 
         accordion.innerHTML = '';
 
-        if (cursos.length === 0) {
-            accordion.innerHTML = '<div class="alert alert-info border-0 shadow-sm mt-3">Nenhuma pauta ativa no momento.</div>';
+        if (!Array.isArray(cursos) || cursos.length === 0) {
+            accordion.innerHTML = '<div class="alert alert-info border-0 rounded-3 p-3 text-center small">Nenhuma pauta ativa no momento.</div>';
             return;
         }
 
         cursos.forEach((curso, index) => {
             let horariosHTML = '';
-
-            // Pega o nome do professor ou avisa se não tiver
-            const nomeProfessor = curso.usuarios ? curso.usuarios.nome : 'Sem Professor Vinculado';
+            const nomeProfessor = curso.usuarios ? curso.usuarios.nome : 'Sem Docente';
 
             if (curso.disponibilidades && curso.disponibilidades.length > 0) {
-                // Ordenar por data
                 curso.disponibilidades.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
 
                 curso.disponibilidades.forEach(disp => {
@@ -627,30 +623,61 @@ async function carregarPautasGlobais(){
 
                     let tabelaModelos = '';
                     if (agendamentosAtivos.length === 0) {
-                        tabelaModelos = `<p class="text-muted small mb-0 mt-2">Nenhum modelo agendado.</p>`;
+                        tabelaModelos = '<p class="text-muted small mb-0 p-2.5 bg-light rounded-3 text-center"><i class="bi bi-info-circle me-1"></i>Nenhum modelo agendado.</p>';
                     } else {
                         let linhas = agendamentosAtivos.map(ag => {
                             const telLimpo = ag.usuarios && ag.usuarios.telefone ? ag.usuarios.telefone.replace(/\D/g, '') : '';
                             const telTexto = ag.usuarios && ag.usuarios.telefone ? ag.usuarios.telefone : 'Sem telefone';
                             const nomeAluno = ag.usuarios ? ag.usuarios.nome : 'Modelo';
+                            const msgZap = encodeURIComponent(`Olá ${nomeAluno}, aqui é da Coordenação do Senac.`);
+
+                            const whatsappBtn = telLimpo
+                                ? `<a href="https://wa.me/55${telLimpo}?text=${msgZap}" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2 py-0 fw-semibold text-nowrap" style="font-size: 0.78rem;" title="WhatsApp"><i class="bi bi-whatsapp me-1"></i>${telTexto}</a>`
+                                : '<span class="text-muted small" style="font-size: 0.78rem;">Sem tel</span>';
+
+                            let statusBadge = '';
+                            if (ag.status === 'concluido') {
+                                statusBadge = '<span class="badge badge-soft-success px-2 py-1" style="font-size: 0.72rem;"><i class="bi bi-patch-check-fill me-1"></i>CONCLUÍDO</span>';
+                            } else if (ag.status === 'agendado') {
+                                statusBadge = '<span class="badge badge-soft-primary px-2 py-1" style="font-size: 0.72rem;">CONFIRMADO</span>';
+                            } else {
+                                statusBadge = `<span class="badge badge-soft-secondary px-2 py-1" style="font-size: 0.72rem;">${(ag.status || '').toUpperCase()}</span>`;
+                            }
+
                             return `
                             <tr>
-                                <td>${nomeAluno}</td>
-                                <td><a href="https://wa.me/55${telLimpo}" target="_blank" class="text-decoration-none text-success">📱 ${telTexto}</a></td>
-                                <td><span class="badge ${ag.status === 'concluido' ? 'bg-success' : 'bg-primary'}">${ag.status.toUpperCase()}</span></td>
+                                <td class="align-middle fw-bold text-dark py-2" style="font-size: 0.84rem;">${nomeAluno}</td>
+                                <td class="align-middle py-2">${whatsappBtn}</td>
+                                <td class="align-middle text-end py-2">${statusBadge}</td>
                             </tr>
                         `;}).join('');
 
                         tabelaModelos = `
-                            <table class="table table-sm mt-3 border">
-                                <thead class="table-light"><tr><th>Modelo</th><th>Contato</th><th>Status</th></tr></thead>
-                                <tbody>${linhas}</tbody>
-                            </table>`;
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr style="font-size: 0.74rem; text-transform: uppercase;">
+                                            <th>Modelo</th>
+                                            <th>Contato</th>
+                                            <th class="text-end">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${linhas}</tbody>
+                                </table>
+                            </div>`;
                     }
 
                     horariosHTML += `
-                        <div class="mb-4 p-3 bg-white border rounded shadow-sm">
-                            <div class="fw-bold text-dark border-bottom pb-2">📅 Data: ${dataFormatada} <span class="badge bg-secondary float-end">Ocupação: ${disp.vagas_ocupadas} / ${disp.vagas_totais}</span></div>
+                        <div class="schedule-card">
+                            <div class="schedule-header">
+                                <div class="schedule-header-title">
+                                    <i class="bi bi-calendar2-event text-primary"></i>
+                                    <span>Aula: ${dataFormatada}</span>
+                                </div>
+                                <span class="badge badge-soft-primary px-2.5 py-1" style="font-size: 0.74rem;">
+                                    Vagas: ${disp.vagas_ocupadas} / ${disp.vagas_totais}
+                                </span>
+                            </div>
                             ${tabelaModelos}
                         </div>
                     `;
@@ -660,18 +687,20 @@ async function carregarPautasGlobais(){
             const itemOpen = index === 0 ? 'show' : '';
             const btnCollapsed = index === 0 ? '' : 'collapsed';
 
-            // Monta o cabeçalho da "Sanfona" com o nome do curso e o professor
             accordion.innerHTML += `
-                <div class="accordion-item border-0 border-bottom">
+                <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button ${btnCollapsed}" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePauta${curso.id}">
-                            <strong class="me-2 text-primary">📘 ${curso.nome}</strong>
-                            <span class="badge bg-info text-dark">Prof: ${nomeProfessor}</span>
+                            <i class="bi bi-journal-text text-primary me-2"></i>
+                            <span class="me-auto">${curso.nome}</span>
+                            <span class="badge badge-soft-primary ms-2" style="font-size: 0.72rem;">
+                                <i class="bi bi-person-badge me-1"></i>${nomeProfessor}
+                            </span>
                         </button>
                     </h2>
                     <div id="collapsePauta${curso.id}" class="accordion-collapse collapse ${itemOpen}" data-bs-parent="#accordionPautasGlobais">
-                        <div class="accordion-body bg-light">
-                            ${horariosHTML || '<p class="text-muted mt-2">Sem horários abertos para este curso.</p>'}
+                        <div class="accordion-body">
+                            ${horariosHTML || '<p class="text-muted small mb-0 text-center py-2">Sem horários abertos para este curso.</p>'}
                         </div>
                     </div>
                 </div>
@@ -679,7 +708,7 @@ async function carregarPautasGlobais(){
         });
     } catch (error) {
         console.error("Erro ao carregar as pautas globais:", error);
-        accordion.innerHTML = '<div class="text-danger p-4 text-center">Erro ao carregar os dados. Verifique a conexão com o servidor.</div>';
+        accordion.innerHTML = '<div class="alert alert-danger rounded-3 text-center small p-3">Erro ao carregar os dados. Verifique a conexão com o servidor.</div>';
     }
 }
 
