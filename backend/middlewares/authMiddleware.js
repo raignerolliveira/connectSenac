@@ -1,6 +1,7 @@
 // backend/middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/database'); // Importação do banco
+const { JWT_SECRET } = require('../config/env');
 
 module.exports = async (req, res, next) => {
     const token = req.header('Authorization');
@@ -11,7 +12,7 @@ module.exports = async (req, res, next) => {
 
     try {
         const tokenLimpo = token.replace('Bearer ', '');
-        const decodificado = jwt.verify(tokenLimpo, process.env.JWT_SECRET || 'chave_super_secreta_senac');
+        const decodificado = jwt.verify(tokenLimpo, JWT_SECRET);
 
         // CONSULTA DE SEGURANÇA EM TEMPO REAL:
         const { data: usuario, error } = await supabase

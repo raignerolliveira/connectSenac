@@ -72,6 +72,17 @@ async function carregarUtilizadores(){
     }
 }
  
+// Função auxiliar de escape contra XSS
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function renderizarTabelaUtilizadores(lista){
     const tbody = document.getElementById('tabelaUsuariosBody');
     tbody.innerHTML = '';
@@ -82,6 +93,11 @@ function renderizarTabelaUtilizadores(lista){
     }
  
     lista.forEach(user => {
+        const nomeUser = escapeHTML(user.nome);
+        const emailUser = escapeHTML(user.email);
+        const telUser = escapeHTML(user.telefone || '-');
+        const cursosUser = escapeHTML(user.cursos_ativos || '-');
+
         const statusBadge = user.is_bloqueado
             ? '<span class="badge badge-soft-danger px-2 py-1"><i class="bi bi-lock-fill me-1"></i>Bloqueado</span>'
             : '<span class="badge badge-soft-success px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Ativo</span>';
@@ -108,18 +124,19 @@ function renderizarTabelaUtilizadores(lista){
             ? `<button class="btn btn-sm ${user.is_bloqueado ? 'btn-outline-success' : 'btn-outline-warning'} border-0 px-2" onclick="toggleBloqueio('${user.id}', ${user.is_bloqueado})" title="${user.is_bloqueado ? 'Desbloquear' : 'Bloquear'}"><i class="bi ${user.is_bloqueado ? 'bi-unlock-fill' : 'bi-lock-fill'}"></i></button>` : '';
  
         const podeExcluir = payloadToken.perfil === 'admin' || (payloadToken.perfil === 'coordenador' && user.perfil === 'candidato');
+        const nomeEscapadoParam = nomeUser.replace(/'/g, "\\'");
         const btnExcluir = podeExcluir
-            ? `<button class="btn btn-sm btn-outline-danger border-0 px-2" onclick="excluirUsuario('${user.id}', '${user.nome}')" title="Excluir Conta"><i class="bi bi-trash-fill"></i></button>` : '';
+            ? `<button class="btn btn-sm btn-outline-danger border-0 px-2" onclick="excluirUsuario('${user.id}', '${nomeEscapadoParam}')" title="Excluir Conta"><i class="bi bi-trash-fill"></i></button>` : '';
  
         const row = `
             <tr>
-                <td><div class="fw-bold text-dark">${user.nome}</div></td>
+                <td><div class="fw-bold text-dark">${nomeUser}</div></td>
                 <td>
-                    <div class="small fw-semibold text-secondary">${user.email}</div>
-                    <div class="text-muted small">${user.telefone || '-'}</div>
+                    <div class="small fw-semibold text-secondary">${emailUser}</div>
+                    <div class="text-muted small">${telUser}</div>
                 </td>
                 <td>${seletorPerfil}</td>
-                <td><span class="badge badge-soft-primary">${user.cursos_ativos || '-'}</span></td>
+                <td><span class="badge badge-soft-primary">${cursosUser}</span></td>
                 <td class="text-center fw-bold text-primary">${user.total_agendados || 0}</td>
                 <td class="text-center fw-bold text-success">${user.total_concluidos || 0}</td>
                 <td class="text-center fw-bold text-danger">${user.total_cancelados || 0}</td>
@@ -476,23 +493,28 @@ async function carregarCursosAdmin(){
         }
  
         cursos.forEach(curso => {
-            const profNome = curso.usuarios ? curso.usuarios.nome : 'Sem Professor';
+            const nomeCurso = escapeHTML(curso.nome);
+            const descCurso = escapeHTML(curso.descricao || '');
+            const profNome = escapeHTML(curso.usuarios ? curso.usuarios.nome : 'Sem Professor');
+            const localCurso = escapeHTML(curso.localizacao || '-');
+            const nomeParam = nomeCurso.replace(/'/g, "\\'");
+
             const statusBadge = curso.status === 'ativo'
                 ? '<span class="badge badge-soft-success px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Ativo</span>'
                 : '<span class="badge badge-soft-secondary px-2 py-1"><i class="bi bi-archive-fill me-1"></i>Arquivado</span>';
 
             const btnArquivar = curso.status === 'ativo'
-                ? `<button class="btn btn-sm btn-outline-danger border-0 px-2" onclick="arquivarCurso('${curso.id}', '${curso.nome}')" title="Arquivar Curso"><i class="bi bi-archive-fill"></i></button>`
+                ? `<button class="btn btn-sm btn-outline-danger border-0 px-2" onclick="arquivarCurso('${curso.id}', '${nomeParam}')" title="Arquivar Curso"><i class="bi bi-archive-fill"></i></button>`
                 : '';
 
             const row = `
                 <tr>
                     <td>
-                        <div class="fw-bold text-dark">${curso.nome}</div>
-                        <div class="small text-muted text-truncate" style="max-width: 260px;">${curso.descricao}</div>
+                        <div class="fw-bold text-dark">${nomeCurso}</div>
+                        <div class="small text-muted text-truncate" style="max-width: 260px;">${descCurso}</div>
                     </td>
                     <td><div class="small fw-semibold text-secondary"><i class="bi bi-person-badge text-primary me-1"></i>${profNome}</div></td>
-                    <td class="small text-muted"><i class="bi bi-geo-alt text-secondary me-1"></i>${curso.localizacao || '-'}</td>
+                    <td class="small text-muted"><i class="bi bi-geo-alt text-secondary me-1"></i>${localCurso}</td>
                     <td>${statusBadge}</td>
                     <td class="text-end text-nowrap">
                         <div class="d-inline-flex gap-1">
@@ -612,7 +634,7 @@ async function carregarPautasGlobais(){
 
         cursos.forEach((curso, index) => {
             let horariosHTML = '';
-            const nomeProfessor = curso.usuarios ? curso.usuarios.nome : 'Sem Docente';
+            const nomeProfessor = escapeHTML(curso.usuarios ? curso.usuarios.nome : 'Sem Docente');
 
             if (curso.disponibilidades && curso.disponibilidades.length > 0) {
                 curso.disponibilidades.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
@@ -627,9 +649,9 @@ async function carregarPautasGlobais(){
                     } else {
                         let linhas = agendamentosAtivos.map(ag => {
                             const telLimpo = ag.usuarios && ag.usuarios.telefone ? ag.usuarios.telefone.replace(/\D/g, '') : '';
-                            const telTexto = ag.usuarios && ag.usuarios.telefone ? ag.usuarios.telefone : 'Sem telefone';
-                            const nomeAluno = ag.usuarios ? ag.usuarios.nome : 'Modelo';
-                            const msgZap = encodeURIComponent(`Olá ${nomeAluno}, aqui é da Coordenação do Senac.`);
+                            const telTexto = escapeHTML(ag.usuarios && ag.usuarios.telefone ? ag.usuarios.telefone : 'Sem telefone');
+                            const nomeAluno = escapeHTML(ag.usuarios ? ag.usuarios.nome : 'Modelo');
+                            const msgZap = encodeURIComponent(`Olá ${ag.usuarios ? ag.usuarios.nome : 'Modelo'}, aqui é da Coordenação do Senac.`);
 
                             const whatsappBtn = telLimpo
                                 ? `<a href="https://wa.me/55${telLimpo}?text=${msgZap}" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2 py-0 fw-semibold text-nowrap" style="font-size: 0.78rem;" title="WhatsApp"><i class="bi bi-whatsapp me-1"></i>${telTexto}</a>`
@@ -641,7 +663,7 @@ async function carregarPautasGlobais(){
                             } else if (ag.status === 'agendado') {
                                 statusBadge = '<span class="badge badge-soft-primary px-2 py-1" style="font-size: 0.72rem;">CONFIRMADO</span>';
                             } else {
-                                statusBadge = `<span class="badge badge-soft-secondary px-2 py-1" style="font-size: 0.72rem;">${(ag.status || '').toUpperCase()}</span>`;
+                                statusBadge = `<span class="badge badge-soft-secondary px-2 py-1" style="font-size: 0.72rem;">${escapeHTML(ag.status || '').toUpperCase()}</span>`;
                             }
 
                             return `

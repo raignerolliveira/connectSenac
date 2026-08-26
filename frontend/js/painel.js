@@ -30,6 +30,17 @@ const modalAgendamento = modalAgendamentoEl ? new bootstrap.Modal(modalAgendamen
 const modalFeedbackEl = document.getElementById("modalFeedback");
 const modalFeedback = modalFeedbackEl ? new bootstrap.Modal(modalFeedbackEl) : null;
 
+// Função auxiliar de escape contra XSS
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // ==========================================
 // 1. CARREGAR A VITRINE DE CURSOS
 // ==========================================
@@ -53,20 +64,22 @@ async function carregarCursos() {
     }
 
     cursos.forEach((curso) => {
-      const profNome = curso.usuarios ? curso.usuarios.nome : "Docente Senac";
+      const profNome = escapeHTML(curso.usuarios ? curso.usuarios.nome : "Docente Senac");
       const local = curso.localizacao || "SENAC Santo Antônio de Jesus";
-      const localCurto = local.split(",")[0];
+      const localCurto = escapeHTML(local.split(",")[0]);
       const imagem =
         curso.foto_url ||
         "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80";
 
       const cursoParam = JSON.stringify(curso).replace(/'/g, "&#39;");
+      const nomeCursoEscapado = escapeHTML(curso.nome);
+      const descCursoEscapada = escapeHTML((curso.descricao || "").substring(0, 90));
 
       const card = `
         <div class="col-md-6 col-lg-4">
             <div class="course-card" onclick='abrirModalDetalhesCurso(${cursoParam})' style="cursor: pointer;">
                 <div class="course-img-wrapper">
-                    <img src="${imagem}" alt="${curso.nome}">
+                    <img src="${imagem}" alt="${nomeCursoEscapado}">
                     <div class="course-badge-overlay">
                         <i class="bi bi-geo-alt-fill text-warning me-1"></i> ${localCurto}
                     </div>
@@ -75,8 +88,8 @@ async function carregarCursos() {
                     <div class="d-flex align-items-center gap-2 mb-1.5 text-muted small fw-semibold" style="font-size: 0.78rem;">
                         <i class="bi bi-person-badge text-primary"></i> ${profNome}
                     </div>
-                    <h5 class="fw-bold font-heading mb-1.5 text-dark" style="font-size: 0.98rem;">${curso.nome}</h5>
-                    <p class="text-secondary small flex-grow-1 mb-3" style="font-size: 0.82rem; line-height: 1.45;">${(curso.descricao || "").substring(0, 90)}...</p>
+                    <h5 class="fw-bold font-heading mb-1.5 text-dark" style="font-size: 0.98rem;">${nomeCursoEscapado}</h5>
+                    <p class="text-secondary small flex-grow-1 mb-3" style="font-size: 0.82rem; line-height: 1.45;">${descCursoEscapada}...</p>
                     <button class="btn btn-soft-primary w-100 py-1.5 fw-bold mt-auto" style="font-size: 0.82rem;">
                         <i class="bi bi-info-circle me-1"></i> Ver Detalhes & Vagas
                     </button>
@@ -147,16 +160,17 @@ function abrirModalDetalhesCurso(curso) {
       let html = `<div class="d-flex align-items-center gap-2 mb-3"><span class="badge bg-warning text-dark fs-6 px-3 py-1">Nota Média: ${media} / 5.0</span> <span class="small text-muted">(${feedbacks.length} avaliações)</span></div>`;
 
       feedbacks.forEach((f) => {
-        const estrelas = "⭐".repeat(f.nota);
+        const estrelas = "⭐".repeat(f.nota || 5);
         const dataFormatada = new Date(f.created_at).toLocaleDateString("pt-BR");
+        const nomeAvaliador = escapeHTML(f.avaliador_nome || "Modelo");
         const comentarioTexto = f.comentario
-          ? `"${f.comentario}"`
+          ? `"${escapeHTML(f.comentario)}"`
           : '<span class="text-muted fst-italic">Sem comentário escrito.</span>';
 
         html += `
             <div class="bg-light p-3 rounded-3 mb-2 border-start border-warning border-4">
                 <div class="d-flex justify-content-between mb-1">
-                    <strong class="small text-dark">${f.avaliador_nome || "Modelo"}</strong>
+                    <strong class="small text-dark">${nomeAvaliador}</strong>
                     <span class="small text-muted">${dataFormatada}</span>
                 </div>
                 <div class="mb-1">${estrelas}</div>
@@ -282,7 +296,7 @@ async function carregarMeusAgendamentos() {
     }
 
     agendamentos.forEach((ag) => {
-      const cursoNome = ag.disponibilidades?.cursos?.nome || "Curso Prático";
+      const cursoNome = escapeHTML(ag.disponibilidades?.cursos?.nome || "Curso Prático");
       const dataHora = ag.disponibilidades?.data_hora
         ? new Date(ag.disponibilidades.data_hora).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })
         : "Data a definir";
@@ -427,17 +441,18 @@ async function carregarMeusFeedbacks() {
     }
 
     feedbacks.forEach((f) => {
-      const estrelas = "⭐".repeat(f.nota);
+      const estrelas = "⭐".repeat(f.nota || 5);
       const dataFormatada = new Date(f.created_at).toLocaleDateString("pt-BR");
+      const cursoNome = escapeHTML(f.curso_nome || "Curso");
       const comentarioTexto = f.comentario
-        ? `"${f.comentario}"`
+        ? `"${escapeHTML(f.comentario)}"`
         : "Apenas nota, sem texto.";
 
       const card = `
         <div class="col-12 col-md-6 col-lg-4">
             <div class="card-premium p-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold font-heading text-dark text-truncate" style="font-size: 0.9rem;">${f.curso_nome || "Curso"}</span>
+                    <span class="fw-bold font-heading text-dark text-truncate" style="font-size: 0.9rem;">${cursoNome}</span>
                     <span class="badge badge-soft-secondary" style="font-size: 0.7rem;">${dataFormatada}</span>
                 </div>
                 <div class="mb-2" style="font-size: 0.88rem;">${estrelas}</div>

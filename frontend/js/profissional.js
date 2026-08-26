@@ -30,6 +30,17 @@ if (btnSair) {
   });
 }
 
+// Função auxiliar de escape contra XSS
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 async function carregarMinhasTurmas() {
   const accordion = document.getElementById("accordionTurmas");
   if (!accordion) return;
@@ -58,6 +69,7 @@ async function carregarMinhasTurmas() {
 
     cursos.forEach((curso, index) => {
       let horariosHTML = "";
+      const nomeCursoEscapado = escapeHTML(curso.nome);
 
       if (curso.disponibilidades && curso.disponibilidades.length > 0) {
         curso.disponibilidades.sort(
@@ -80,25 +92,27 @@ async function carregarMinhasTurmas() {
           } else {
             let linhas = agendamentosAtivos
               .map((ag) => {
+                const nomeUsuario = escapeHTML(ag.usuarios ? (ag.usuarios.nome || "Modelo") : "Modelo");
+                const emailUsuario = escapeHTML(ag.usuarios ? (ag.usuarios.email || "-") : "-");
+                const telOriginal = ag.usuarios ? (ag.usuarios.telefone || "") : "";
+                const telUsuario = escapeHTML(telOriginal);
+                const telLimpo = telOriginal ? telOriginal.replace(/\D/g, "") : "";
+                const msgProf = encodeURIComponent(`Olá ${ag.usuarios ? ag.usuarios.nome : 'Modelo'}, aqui é do Senac referente ao seu agendamento.`);
+                const nomeParam = nomeUsuario.replace(/'/g, "\\'");
+
                 let acoesHTML = "";
                 if (ag.status === "agendado") {
                   acoesHTML = `
                     <div class="d-flex gap-1 justify-content-end justify-content-md-center">
                       <button class="btn btn-sm btn-outline-success fw-bold px-2 py-1" onclick="concluirServico('${ag.id}')" title="Confirmar Presença" style="font-size: 0.78rem;"><i class="bi bi-check-lg me-1"></i>Presente</button>
-                      <button class="btn btn-sm btn-outline-danger fw-bold px-2 py-1" onclick="cancelarAluno('${ag.id}', '${ag.usuarios ? (ag.usuarios.nome || 'Modelo') : 'Modelo'}')" title="Cancelar / Falta" style="font-size: 0.78rem;"><i class="bi bi-x-lg"></i></button>
+                      <button class="btn btn-sm btn-outline-danger fw-bold px-2 py-1" onclick="cancelarAluno('${ag.id}', '${nomeParam}')" title="Cancelar / Falta" style="font-size: 0.78rem;"><i class="bi bi-x-lg"></i></button>
                     </div>
                   `;
                 } else if (ag.status === "concluido") {
                   acoesHTML = '<span class="badge badge-soft-success px-2 py-1" style="font-size: 0.72rem;"><i class="bi bi-patch-check-fill me-1"></i>CONCLUÍDO</span>';
                 } else {
-                  acoesHTML = `<span class="badge badge-soft-secondary px-2 py-1" style="font-size: 0.72rem;">${(ag.status || '').toUpperCase()}</span>`;
+                  acoesHTML = `<span class="badge badge-soft-secondary px-2 py-1" style="font-size: 0.72rem;">${escapeHTML(ag.status || '').toUpperCase()}</span>`;
                 }
-
-                const nomeUsuario = ag.usuarios ? (ag.usuarios.nome || "Modelo") : "Modelo";
-                const emailUsuario = ag.usuarios ? (ag.usuarios.email || "-") : "-";
-                const telUsuario = ag.usuarios ? (ag.usuarios.telefone || "") : "";
-                const telLimpo = telUsuario ? telUsuario.replace(/\D/g, "") : "";
-                const msgProf = encodeURIComponent(`Olá ${nomeUsuario}, aqui é do Senac referente ao seu agendamento.`);
 
                 const whatsappBtn = telLimpo
                   ? `<a href="https://wa.me/55${telLimpo}?text=${msgProf}" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2 py-0 fw-semibold text-nowrap" style="font-size: 0.78rem;" title="Falar no WhatsApp"><i class="bi bi-whatsapp me-1"></i>${telUsuario}</a>`
@@ -158,7 +172,7 @@ async function carregarMinhasTurmas() {
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button ${btnCollapsed}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${curso.id}">
-              <i class="bi bi-journal-text text-primary me-2"></i> ${curso.nome}
+              <i class="bi bi-journal-text text-primary me-2"></i> ${nomeCursoEscapado}
             </button>
           </h2>
           <div id="collapse${curso.id}" class="accordion-collapse collapse ${itemOpen}" data-bs-parent="#accordionTurmas">

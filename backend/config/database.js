@@ -1,18 +1,9 @@
 // backend/config/database.js
-require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-
-// Buscando as variáveis de ambiente protegidas
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-    console.error('ERRO: Credenciais do Supabase ausentes no arquivo .env.');
-    process.exit(1);
-}
+const { SUPABASE_URL, SUPABASE_KEY } = require('./env');
 
 // Criando a instância de conexão com o banco de dados
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 console.log('Conectado ao Supabase (PostgreSQL) com sucesso!');
 

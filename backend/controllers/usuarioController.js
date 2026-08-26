@@ -3,6 +3,7 @@ const supabase = require('../config/database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); // Biblioteca nativa do Node.js para criptografia
+const { JWT_SECRET } = require('../config/env');
 
 
 // 1. LÓGICA DE REGISTO (CADASTRO)
@@ -96,7 +97,7 @@ exports.login = async (req, res) => {
         // Guardamos o 'id' e o 'perfil' (role) dentro do token para o sistema de permissões (RBAC)
         const token = jwt.sign(
             { id: utilizador.id, email: utilizador.email, perfil: utilizador.perfil },
-            process.env.JWT_SECRET || 'chave_super_secreta_senac',
+            JWT_SECRET,
             { expiresIn: '24h' }
         );
 

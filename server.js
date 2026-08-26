@@ -1,36 +1,71 @@
 // server.js
-require('dotenv').config(); // Carrega as variáveis do arquivo .env
-require('./backend/cron/notificador')
+const { PORT, NODE_ENV } = require('./backend/config/env');
+require('./backend/cron/notificador');
 const express = require('express');
 const cors = require('cors');
-const db = require('./backend/config/database');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+
 const usuarioRoutes = require('./backend/routes/usuarioRoutes');
 const agendamentoRoutes = require('./backend/routes/agendamentoRoutes'); 
 const cursoRoutes = require('./backend/routes/cursoRoutes'); 
 const disponibilidadeRoutes = require('./backend/routes/disponibilidadeRoutes');
-const path = require('path'); // Adicione esta linha para lidar com caminhos de pastas
-
-
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// Proteção de Cabeçalhos HTTP com Helmet
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+                styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+                fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
+                imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.supabase.co"],
+                connectSrc: ["'self'", "https://*.supabase.co"]
+            }
+        },
+        crossOriginResourcePolicy: { policy: "cross-origin" }
+    })
+);
+
+// Limitador de Taxa Geral para a API
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 200, // Limite por IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { erro: 'Muitas requisições originadas deste IP. Tente novamente mais tarde.' }
+});
+app.use('/api', apiLimiter);
+
+// Limitador Estrito para Autenticação / Recuperação de Senha
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 20, // 20 tentativas por IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { erro: 'Muitas tentativas de autenticação. Aguarde alguns minutos antes de tentar novamente.' }
+});
+app.use('/api/usuarios/login', authLimiter);
+app.use('/api/usuarios/recuperar', authLimiter);
+app.use('/api/usuarios/redefinir-senha', authLimiter);
 
 // Middlewares
 app.use(cors()); // Libera o acesso do Front-end
-app.use(express.json()); // Ensina o Express a entender requisições no formato JSON
+app.use(express.json()); // Parsing JSON
 
-// A LINHA MÁGICA DA OPÇÃO 2:
-// Isto diz ao Node.js: "Qualquer ficheiro HTML, CSS ou JS que estiver na pasta 'frontend', entregue ao utilizador"
+// Servir frontend estático
 app.use(express.static(path.join(__dirname, 'frontend')));
-
 
 // Rota de teste simples
 app.get('/api/status', (req, res) => {
     res.json({ mensagem: "Servidor Connect Senac rodando com sucesso!", status: "OK" });
 });
 
-
-// Usando as rotas na API
+// Rotas da API
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/agendamentos', agendamentoRoutes);
 app.use('/api/cursos', cursoRoutes);
@@ -49,14 +84,18 @@ app.use('/api', (req, res) => {
 app.use((err, req, res, next) => {
     console.error('❌ [ERRO NÃO TRATADO]:', err.stack || err.message);
     res.status(err.status || 500).json({
-        erro: process.env.NODE_ENV === 'production'
+        erro: NODE_ENV === 'production'
             ? 'Ocorreu um erro interno no servidor.'
             : (err.message || 'Erro interno no servidor.')
     });
 });
 
-// Iniciando o servidor
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse: http://localhost:${PORT}/api/status`);
-});
+// Iniciando o servidor se executado diretamente
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+        console.log(`Acesse: http://localhost:${PORT}/api/status`);
+    });
+}
+
+module.exports = app;
