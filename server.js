@@ -14,17 +14,20 @@ const disponibilidadeRoutes = require('./backend/routes/disponibilidadeRoutes');
 
 const app = express();
 
-// Proteção de Cabeçalhos HTTP com Helmet
+// Proteção de Cabeçalhos HTTP com Helmet & Content Security Policy (CSP)
 app.use(
     helmet({
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-                styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
-                fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
-                imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.supabase.co"],
-                connectSrc: ["'self'", "https://*.supabase.co"]
+                scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+                scriptSrcElem: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+                scriptSrcAttr: ["'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://unpkg.com"],
+                styleSrcElem: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://unpkg.com"],
+                fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://unpkg.com", "data:"],
+                imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com", "https://*.supabase.co", "https:"],
+                connectSrc: ["'self'", "https://*.supabase.co", "https://cdn.jsdelivr.net", "https://unpkg.com", "ws:", "wss:", "http:", "https:"]
             }
         },
         crossOriginResourcePolicy: { policy: "cross-origin" }
