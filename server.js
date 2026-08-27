@@ -14,22 +14,10 @@ const disponibilidadeRoutes = require('./backend/routes/disponibilidadeRoutes');
 
 const app = express();
 
-// Proteção de Cabeçalhos HTTP com Helmet & Content Security Policy (CSP)
+// Proteção de Cabeçalhos HTTP com Helmet (MIME Sniffing, Frameguard, Referrer, etc.)
 app.use(
     helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
-                scriptSrcElem: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
-                scriptSrcAttr: ["'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://unpkg.com"],
-                styleSrcElem: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://unpkg.com"],
-                fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://unpkg.com", "data:"],
-                imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com", "https://*.supabase.co", "https:"],
-                connectSrc: ["'self'", "https://*.supabase.co", "https://cdn.jsdelivr.net", "https://unpkg.com", "ws:", "wss:", "http:", "https:"]
-            }
-        },
+        contentSecurityPolicy: false,
         crossOriginResourcePolicy: { policy: "cross-origin" }
     })
 );
