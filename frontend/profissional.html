@@ -3,173 +3,127 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Connect Senac - Painel do Docente</title>
-    <!-- Google Fonts -->
+    <title>Connect Senac — Central do Professor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5 & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Premium Design System -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="app-shell">
-        <!-- Sidebar Navigation -->
-        <aside class="app-sidebar" id="appSidebar">
-            <div class="sidebar-brand">
-                <div class="sidebar-logo-icon">
-                    <i class="bi bi-mortarboard-fill"></i>
-                </div>
-                <h3 class="sidebar-brand-title">Connect <span>Senac</span></h3>
+<div class="app-shell">
+
+    <!-- ── SIDEBAR LIGHT ── -->
+    <aside class="app-sidebar" id="appSidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-logo-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 18C4 10.268 10.268 4 18 4C23.5 4 28 8 28 14C24 10 18 10 12 14C8 16.5 5.5 20 4 18Z" fill="#F29100"/>
+                    <path d="M8 24C12 28 19 28 24 24C28 20.5 28 15 28 14C23 18 16 18 10 15C8.5 17 8 21 8 24Z" fill="#005BB5"/>
+                </svg>
+            </div>
+            <h3 class="sidebar-brand-title">Connect <span>Senac</span></h3>
+        </div>
+
+        <div class="sidebar-content">
+            <div>
+                <div class="sidebar-section-title">Navegação Docente</div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a class="sidebar-link active" href="#turmas">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Minhas Turmas & Pautas</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
-            <div class="sidebar-content">
-                <div>
-                    <div class="sidebar-section-title">Navegação Docente</div>
-                    <ul class="sidebar-nav">
-                        <li>
-                            <a class="sidebar-link active" href="#turmas">
-                                <i class="bi bi-person-lines-fill"></i>
-                                <span>Minhas Turmas & Pautas</span>
-                            </a>
-                        </li>
-                    </ul>
+            <div>
+                <div class="sidebar-section-title">Instruções</div>
+                <div class="sidebar-info-box">
+                    <div class="info-label">
+                        <i class="bi bi-check2-circle" style="color:var(--status-success);"></i> Confirmação de Presença
+                    </div>
+                    Clique em <strong style="color:#065F46;">Presente</strong> quando o modelo comparecer, ou em <strong style="color:#991B1B;">Ausente</strong> para liberar a vaga.
                 </div>
+            </div>
+        </div>
 
-                <div>
-                    <div class="sidebar-section-title">Instruções Rápidas</div>
-                    <div class="p-3 bg-white bg-opacity-10 rounded-3 text-white-50 small">
-                        <div class="d-flex align-items-center gap-2 mb-1 text-white fw-bold">
-                            <i class="bi bi-check2-circle text-success"></i> Confirmação de Presença
-                        </div>
-                        Clique em Presente quando o modelo comparecer ou no botão de cancelamento para liberar a vaga em caso de falta.
+        <div class="sidebar-footer">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                <div class="user-profile-badge">
+                    <div class="user-avatar" aria-hidden="true">
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="nomeProf">Docente Senac</div>
+                        <div class="user-role">Professor(a)</div>
+                    </div>
+                </div>
+                <button class="btn-ghost-light btn-xs" id="btnSair" title="Sair do Sistema" aria-label="Sair do Sistema" style="border-color:transparent;color:var(--text-muted);">
+                    <i class="bi bi-box-arrow-right" style="font-size:1.05rem;"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="app-main">
+        <!-- Topbar -->
+        <header class="app-topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Abrir menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h4 class="topbar-title">Central do Professor</h4>
+            </div>
+            <div class="topbar-right">
+                <span class="badge-v2 blue">
+                    <i class="bi bi-person-badge-fill"></i> Docente Oficial
+                </span>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="app-content">
+
+            <!-- Banner Hero com Gradiente Azul Senac -->
+            <div class="banner-hero-v2">
+                <div class="banner-tag">
+                    <i class="bi bi-journal-bookmark"></i> Diário de Classe Digital
+                </div>
+                <h3 class="banner-title">Pautas e Listas de Presença</h3>
+                <p class="banner-desc">Acompanhe as inscrições de modelos para as suas aulas práticas em tempo real com controle instantâneo de comparecimento.</p>
+            </div>
+
+            <!-- Turmas & Pautas -->
+            <div class="card-premium" id="turmas">
+                <div class="card-header-premium">
+                    <h5 class="card-title-premium">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        Cursos e Horários Sob Sua Responsabilidade
+                    </h5>
+                </div>
+                <div style="padding:1.25rem;">
+                    <div class="accordion" id="accordionTurmas">
+                        <!-- Preenchido via profissional.js -->
                     </div>
                 </div>
             </div>
 
-            <div class="sidebar-footer">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="user-profile-badge">
-                        <div class="user-avatar">
-                            <i class="bi bi-person-workspace"></i>
-                        </div>
-                        <div class="user-info">
-                            <div class="user-name" id="nomeProf">Docente Senac</div>
-                            <div class="user-role">Professor(a)</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-outline-light border-0 text-white-50 p-2" id="btnSair" title="Sair do Sistema">
-                        <i class="bi bi-box-arrow-right fs-5"></i>
-                    </button>
-                </div>
-            </div>
-        </aside>
+        </div><!-- /app-content -->
+    </main>
+</div><!-- /app-shell -->
 
-        <!-- Main Content Area -->
-        <main class="app-main">
-            <!-- Topbar -->
-            <header class="app-topbar">
-                <div class="topbar-left">
-                    <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()">
-                        <i class="bi bi-list"></i>
-                    </button>
-                    <div>
-                        <h4 class="topbar-title">Central do Professor</h4>
-                    </div>
-                </div>
-                <div class="topbar-right">
-                    <span class="badge badge-soft-primary">
-                        <i class="bi bi-person-badge-fill me-1"></i> Docente
-                    </span>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <div class="app-content">
-                <div class="banner-hero">
-                    <span class="banner-hero-badge bg-warning text-dark">👨‍🏫 Diário de Classe Digital</span>
-                    <h3 class="banner-hero-title">Pautas e Listas de Presença</h3>
-                    <p class="banner-hero-desc">Acompanhe as inscrições de modelos para as suas aulas práticas em tempo real.</p>
-                </div>
-
-                <div class="card-premium p-3 p-md-4" id="turmas">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title-premium">
-                            <i class="bi bi-journal-bookmark-fill text-primary"></i>
-                            Cursos e Horários Sob Sua Responsabilidade
-                        </h5>
-                    </div>
-
-                    <div class="accordion shadow-none" id="accordionTurmas">
-                        <div class="text-center text-muted p-4">
-                            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-                            A carregar a pauta de presenças...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleSidebar(forceState) {
-            const sidebar = document.getElementById('appSidebar');
-            if (!sidebar) return;
-
-            let backdrop = document.getElementById('sidebarBackdrop');
-            if (!backdrop) {
-                backdrop = document.createElement('div');
-                backdrop.id = 'sidebarBackdrop';
-                backdrop.className = 'sidebar-backdrop';
-                document.body.appendChild(backdrop);
-                backdrop.addEventListener('click', closeSidebar);
-            }
-
-            const shouldShow = forceState !== undefined 
-                ? forceState 
-                : !sidebar.classList.contains('show');
-
-            if (shouldShow) {
-                sidebar.classList.add('show');
-                backdrop.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            } else {
-                sidebar.classList.remove('show');
-                backdrop.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        }
-
-        function closeSidebar() {
-            toggleSidebar(false);
-        }
-
-        document.addEventListener('click', (e) => {
-            const sidebar = document.getElementById('appSidebar');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            if (!sidebar || !sidebar.classList.contains('show')) return;
-
-            if (!sidebar.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
-                closeSidebar();
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeSidebar();
-        });
-
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth < 992) {
-                    closeSidebar();
-                }
-            });
-        });
-    </script>
-    <script src="js/utils.js"></script>
-    <script src="js/profissional.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/utils.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const accordion = document.getElementById('accordionTurmas');
+        if (accordion) showLoading(accordion, 'A carregar pautas de presença');
+    });
+</script>
+<script src="js/profissional.js"></script>
 </body>
 </html>

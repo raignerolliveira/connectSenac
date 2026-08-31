@@ -62,8 +62,7 @@ async function carregarMinhasTurmas() {
     accordion.innerHTML = "";
 
     if (!Array.isArray(cursos) || cursos.length === 0) {
-      accordion.innerHTML =
-        '<div class="p-4 bg-light rounded-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Nenhum curso ativo vinculado ao seu perfil no momento.</div>';
+      showEmpty(accordion, "Nenhuma turma ativa", "Nenhum curso ativo vinculado ao seu perfil docente no momento.", "bi-journal-x");
       return;
     }
 
@@ -88,7 +87,7 @@ async function carregarMinhasTurmas() {
 
           let tabelaModelos = "";
           if (agendamentosAtivos.length === 0) {
-            tabelaModelos = '<p class="text-muted small mb-0 p-2.5 bg-light rounded-3 text-center"><i class="bi bi-info-circle me-1"></i>Nenhum modelo agendado para este horário ainda.</p>';
+            tabelaModelos = '<p style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center;padding:0.75rem 0;margin:0;"><i class="bi bi-info-circle" style="margin-right:4px;"></i>Nenhum modelo agendado para este horário ainda.</p>';
           } else {
             let linhas = agendamentosAtivos
               .map((ag) => {
@@ -97,36 +96,36 @@ async function carregarMinhasTurmas() {
                 const telOriginal = ag.usuarios ? (ag.usuarios.telefone || "") : "";
                 const telUsuario = escapeHTML(telOriginal);
                 const telLimpo = telOriginal ? telOriginal.replace(/\D/g, "") : "";
-                const msgProf = encodeURIComponent(`Olá ${ag.usuarios ? ag.usuarios.nome : 'Modelo'}, aqui é do Senac referente ao seu agendamento.`);
+                const msgProf = encodeURIComponent(`Olá ${ag.usuarios ? ag.usuarios.nome : 'Modelo'}, aqui é do Senac Bahia referente ao seu agendamento.`);
                 const nomeParam = nomeUsuario.replace(/'/g, "\\'");
 
                 let acoesHTML = "";
                 if (ag.status === "agendado") {
                   acoesHTML = `
-                    <div class="d-flex gap-1 justify-content-end justify-content-md-center">
-                      <button class="btn btn-sm btn-outline-success fw-bold px-2 py-1" onclick="concluirServico('${ag.id}')" title="Confirmar Presença" style="font-size: 0.78rem;"><i class="bi bi-check-lg me-1"></i>Presente</button>
-                      <button class="btn btn-sm btn-outline-danger fw-bold px-2 py-1" onclick="cancelarAluno('${ag.id}', '${nomeParam}')" title="Cancelar / Falta" style="font-size: 0.78rem;"><i class="bi bi-x-lg"></i></button>
+                    <div class="presence-actions justify-content-end justify-content-md-center">
+                      <button class="btn-presence present" onclick="concluirServico('${ag.id}')" title="Confirmar Presença"><i class="bi bi-check-lg" style="margin-right:3px;"></i>Presente</button>
+                      <button class="btn-presence absent" onclick="cancelarAluno('${ag.id}', '${nomeParam}')" title="Cancelar / Falta"><i class="bi bi-x-lg"></i></button>
                     </div>
                   `;
                 } else if (ag.status === "concluido") {
-                  acoesHTML = '<span class="badge badge-soft-success px-2 py-1" style="font-size: 0.72rem;"><i class="bi bi-patch-check-fill me-1"></i>CONCLUÍDO</span>';
+                  acoesHTML = '<span class="badge-v2 success"><i class="bi bi-patch-check-fill"></i> CONCLUÍDO</span>';
                 } else {
-                  acoesHTML = `<span class="badge badge-soft-secondary px-2 py-1" style="font-size: 0.72rem;">${escapeHTML(ag.status || '').toUpperCase()}</span>`;
+                  acoesHTML = `<span class="badge-v2 neutral">${escapeHTML(ag.status || '').toUpperCase()}</span>`;
                 }
 
                 const whatsappBtn = telLimpo
-                  ? `<a href="https://wa.me/55${telLimpo}?text=${msgProf}" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2 py-0 fw-semibold text-nowrap" style="font-size: 0.78rem;" title="Falar no WhatsApp"><i class="bi bi-whatsapp me-1"></i>${telUsuario}</a>`
-                  : '<span class="text-muted small">Sem tel</span>';
+                  ? `<a href="https://wa.me/55${telLimpo}?text=${msgProf}" target="_blank" class="btn-whatsapp" title="Falar no WhatsApp (${telUsuario})"><i class="bi bi-whatsapp"></i></a>`
+                  : '<span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">Sem tel</span>';
 
                 return `
                   <tr>
-                    <td class="align-middle fw-bold text-dark py-2" style="font-size: 0.84rem;">
+                    <td>
                       <div>${nomeUsuario}</div>
-                      <div class="text-muted small d-md-none" style="font-size: 0.72rem;">${emailUsuario}</div>
+                      <div class="d-md-none" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${emailUsuario}</div>
                     </td>
-                    <td class="align-middle text-muted small d-none d-md-table-cell py-2" style="font-size: 0.8rem;">${emailUsuario}</td>
-                    <td class="align-middle py-2">${whatsappBtn}</td>
-                    <td class="align-middle text-end text-md-center py-2">${acoesHTML}</td>
+                    <td class="d-none d-md-table-cell" style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${emailUsuario}</td>
+                    <td>${whatsappBtn}</td>
+                    <td class="text-end text-md-center">${acoesHTML}</td>
                   </tr>
                 `;
               })
@@ -134,13 +133,13 @@ async function carregarMinhasTurmas() {
 
             tabelaModelos = `
               <div class="table-responsive">
-                <table class="table table-hover table-sm mb-0 align-middle">
-                  <thead class="table-light">
-                    <tr style="font-size: 0.74rem; text-transform: uppercase;">
+                <table class="table-dark-compact">
+                  <thead>
+                    <tr>
                       <th>Modelo</th>
                       <th class="d-none d-md-table-cell">E-mail</th>
                       <th>WhatsApp</th>
-                      <th class="text-end text-md-center">Ações</th>
+                      <th class="text-end text-md-center">Presença</th>
                     </tr>
                   </thead>
                   <tbody>${linhas}</tbody>
@@ -152,10 +151,10 @@ async function carregarMinhasTurmas() {
             <div class="schedule-card">
               <div class="schedule-header">
                 <div class="schedule-header-title">
-                  <i class="bi bi-calendar2-event text-primary"></i>
+                  <i class="bi bi-calendar2-event" style="color:var(--senac-orange);"></i>
                   <span>Aula: ${dataFormatada}</span>
                 </div>
-                <span class="badge badge-soft-primary px-2.5 py-1" style="font-size: 0.74rem;">
+                <span class="badge-v2 blue">
                   Vagas: ${disp.vagas_ocupadas} / ${disp.vagas_totais}
                 </span>
               </div>

@@ -14,10 +14,54 @@ const disponibilidadeRoutes = require('./backend/routes/disponibilidadeRoutes');
 
 const app = express();
 
-// Proteção de Cabeçalhos HTTP com Helmet (MIME Sniffing, Frameguard, Referrer, etc.)
+// Proteção de Cabeçalhos HTTP com Helmet & Content Security Policy (CSP)
 app.use(
     helmet({
-        contentSecurityPolicy: false,
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: [
+                    "'self'",
+                    "'unsafe-inline'",
+                    "https://cdn.jsdelivr.net",
+                    "https://unpkg.com",
+                    "https://*.kaspersky-labs.com",
+                    "https://gc.kes.v2.scr.kaspersky-labs.com"
+                ],
+                scriptSrcAttr: ["'unsafe-inline'"],
+                styleSrc: [
+                    "'self'",
+                    "'unsafe-inline'",
+                    "https://cdn.jsdelivr.net",
+                    "https://fonts.googleapis.com",
+                    "https://unpkg.com"
+                ],
+                fontSrc: [
+                    "'self'",
+                    "data:",
+                    "https://cdn.jsdelivr.net",
+                    "https://fonts.gstatic.com",
+                    "https://unpkg.com"
+                ],
+                imgSrc: [
+                    "'self'",
+                    "data:",
+                    "blob:",
+                    "https://images.unsplash.com",
+                    "https://*.supabase.co"
+                ],
+                connectSrc: [
+                    "'self'",
+                    "https://*.supabase.co",
+                    "https://cdn.jsdelivr.net",
+                    "https://unpkg.com",
+                    "https://*.kaspersky-labs.com",
+                    "https://gc.kes.v2.scr.kaspersky-labs.com",
+                    "ws:",
+                    "wss:"
+                ]
+            }
+        },
         crossOriginResourcePolicy: { policy: "cross-origin" }
     })
 );
@@ -32,16 +76,17 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// Limitador Estrito para Autenticação / Recuperação de Senha
+// Limitador Estrito para Autenticação / Cadastro / Recuperação de Senha
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
     max: 20, // 20 tentativas por IP
     standardHeaders: true,
     legacyHeaders: false,
-    message: { erro: 'Muitas tentativas de autenticação. Aguarde alguns minutos antes de tentar novamente.' }
+    message: { erro: 'Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.' }
 });
 app.use('/api/usuarios/login', authLimiter);
-app.use('/api/usuarios/recuperar', authLimiter);
+app.use('/api/usuarios/registrar', authLimiter);
+app.use('/api/usuarios/esqueci-senha', authLimiter);
 app.use('/api/usuarios/redefinir-senha', authLimiter);
 
 // Middlewares

@@ -7,9 +7,33 @@ const API_URL =
     : `${window.location.origin}/api`;
 
 const token = localStorage.getItem("token");
+let payloadToken = null;
 
 if (!token) {
   window.location.href = "index.html";
+} else {
+  try {
+    payloadToken = JSON.parse(atob(token.split(".")[1]));
+    const userNameDisplay = document.getElementById("userNameDisplay");
+    if (userNameDisplay && payloadToken.nome) {
+      userNameDisplay.textContent = payloadToken.nome;
+    }
+    // Se for admin ou coordenador acessando a visão do modelo, adiciona botão de voltar ao Admin
+    if (payloadToken.perfil === "admin" || payloadToken.perfil === "coordenador") {
+      const topbarRight = document.querySelector(".topbar-right");
+      if (topbarRight && !document.getElementById("btnVoltarAdmin")) {
+        const linkAdmin = document.createElement("a");
+        linkAdmin.id = "btnVoltarAdmin";
+        linkAdmin.href = "admin.html";
+        linkAdmin.className = "btn-ghost-dark btn-xs text-decoration-none me-2";
+        linkAdmin.style.cssText = "display:inline-flex;align-items:center;gap:0.35rem;padding:0.3rem 0.65rem;border-radius:var(--radius-sm);font-size:var(--text-xs);font-family:var(--font-mono);font-weight:500;color:var(--text-secondary);";
+        linkAdmin.innerHTML = '<i class="bi bi-shield-lock text-danger"></i> <span>Voltar ao Admin</span>';
+        topbarRight.prepend(linkAdmin);
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao decodificar token no painel:", e);
+  }
 }
 
 const btnSair = document.getElementById("btnSair");
@@ -55,11 +79,13 @@ async function carregarCursos() {
       headers: { Authorization: `Bearer ${token}` },
     });
     const cursos = await response.json();
-
     divCursos.innerHTML = "";
     if (!Array.isArray(cursos) || cursos.length === 0) {
-      divCursos.innerHTML =
-        '<div class="col-12"><div class="p-4 bg-light rounded-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Nenhum serviço ou curso disponível no momento.</div></div>';
+      divCursos.innerHTML = `<div class="col-12"><div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <p class="empty-title">Nenhum curso disponível</p>
+        <p class="empty-desc">Nenhum serviço está aberto para inscrição no momento.</p>
+      </div></div>`;
       return;
     }
 
@@ -77,31 +103,28 @@ async function carregarCursos() {
 
       const card = `
         <div class="col-md-6 col-lg-4">
-            <div class="course-card" onclick='abrirModalDetalhesCurso(${cursoParam})' style="cursor: pointer;">
-                <div class="course-img-wrapper">
-                    <img src="${imagem}" alt="${nomeCursoEscapado}">
-                    <div class="course-badge-overlay">
-                        <i class="bi bi-geo-alt-fill text-warning me-1"></i> ${localCurto}
-                    </div>
+            <div class="course-card-v2" onclick='abrirModalDetalhesCurso(${cursoParam})' style="cursor:pointer;">
+                <div class="course-card-img">
+                    <img src="${imagem}" alt="${nomeCursoEscapado}" loading="lazy">
+                    <span class="course-category-badge"><i class="bi bi-geo-alt" style="margin-right:3px;"></i>${localCurto}</span>
                 </div>
-                <div class="p-3 d-flex flex-column flex-grow-1">
-                    <div class="d-flex align-items-center gap-2 mb-1.5 text-muted small fw-semibold" style="font-size: 0.78rem;">
-                        <i class="bi bi-person-badge text-primary"></i> ${profNome}
-                    </div>
-                    <h5 class="fw-bold font-heading mb-1.5 text-dark" style="font-size: 0.98rem;">${nomeCursoEscapado}</h5>
-                    <p class="text-secondary small flex-grow-1 mb-3" style="font-size: 0.82rem; line-height: 1.45;">${descCursoEscapada}...</p>
-                    <button class="btn btn-soft-primary w-100 py-1.5 fw-bold mt-auto" style="font-size: 0.82rem;">
-                        <i class="bi bi-info-circle me-1"></i> Ver Detalhes & Vagas
-                    </button>
+                <div class="course-card-body">
+                    <h3 class="course-name">${nomeCursoEscapado}</h3>
+                    <p class="course-prof"><i class="bi bi-person-badge" style="margin-right:3px;"></i>${profNome}</p>
+                    <p style="font-size:var(--text-xs);color:var(--text-muted);line-height:1.45;margin:0;">${descCursoEscapada}...</p>
+                </div>
+                <div class="course-card-footer">
+                    <span class="course-slot-counter">Ver horários</span>
+                    <button class="btn-course-action">Detalhes</button>
                 </div>
             </div>
         </div>
       `;
       divCursos.innerHTML += card;
     });
+    animateCardsIn("#listaCursos .course-card-v2");
   } catch (error) {
-    divCursos.innerHTML =
-      '<div class="col-12"><div class="alert alert-danger rounded-3 p-3 text-center small">Erro ao carregar catálogo de cursos.</div></div>';
+    showError(divCursos, "Erro ao carregar catálogo de cursos.");
   }
 }
 
@@ -290,8 +313,11 @@ async function carregarMeusAgendamentos() {
 
     divAgendamentos.innerHTML = "";
     if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
-      divAgendamentos.innerHTML =
-        '<div class="col-12"><div class="p-3 bg-light rounded-3 text-center text-muted small"><i class="bi bi-calendar-x fs-3 d-block mb-1"></i>Você não possui nenhum agendamento ativo no momento.</div></div>';
+      divAgendamentos.innerHTML = `<div class="col-12"><div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
+        <p class="empty-title">Nenhum agendamento ativo</p>
+        <p class="empty-desc">Explore a vitrine de cursos e agende sua primeira sessão.</p>
+      </div></div>`;
       return;
     }
 
@@ -305,30 +331,31 @@ async function carregarMeusAgendamentos() {
       let acoesHTML = "";
 
       if (ag.status === "agendado") {
-        badge = '<span class="badge badge-soft-primary px-2.5 py-1" style="font-size: 0.72rem;"><i class="bi bi-check-circle me-1"></i> Confirmado</span>';
-        acoesHTML = `<button class="btn btn-sm btn-outline-danger w-100 fw-bold py-1.5 mt-2" style="font-size: 0.8rem;" onclick="cancelarAgendamento('${ag.id}')"><i class="bi bi-x-circle me-1"></i> Cancelar Inscrição</button>`;
+        badge = '<span class="badge-v2 success"><span class="status-dot"></span>Confirmado</span>';
+        acoesHTML = `<button class="btn-ghost-light btn-sm w-100" style="margin-top:0.5rem;color:var(--status-danger);border-color:var(--status-danger-border);" onclick="cancelarAgendamento('${ag.id}')"><i class="bi bi-x-circle" style="margin-right:4px;"></i>Cancelar Inscrição</button>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center;margin-top:4px;">Cancelamentos permitidos com até 2h de antecedência</div>`;
       } else if (ag.status === "cancelado") {
-        badge = '<span class="badge badge-soft-danger px-2.5 py-1" style="font-size: 0.72rem;"><i class="bi bi-x-circle me-1"></i> Cancelado</span>';
+        badge = '<span class="badge-v2 danger"><i class="bi bi-x-circle"></i> Cancelado</span>';
       } else if (ag.status === "concluido") {
-        badge = '<span class="badge badge-soft-success px-2.5 py-1" style="font-size: 0.72rem;"><i class="bi bi-patch-check me-1"></i> Concluído</span>';
-        acoesHTML = `<button class="btn btn-sm btn-accent w-100 fw-bold py-1.5 mt-2" style="font-size: 0.8rem;" onclick="abrirModalFeedback('${ag.id}')"><i class="bi bi-star-fill me-1"></i> Avaliar Serviço</button>`;
+        badge = '<span class="badge-v2 orange"><i class="bi bi-patch-check"></i> Concluído</span>';
+        acoesHTML = `<button class="btn-brand btn-sm w-100" style="margin-top:0.5rem;" onclick="abrirModalFeedback('${ag.id}')"><i class="bi bi-star-fill"></i> Avaliar Serviço</button>`;
       }
 
       const card = `
         <div class="col-12 col-md-6 col-xl-4">
-            <div class="card-premium p-3 h-100 d-flex flex-column justify-content-between">
+            <div class="card-premium" style="padding:1rem;height:100%;display:flex;flex-direction:column;justify-content:space-between;">
                 <div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-bold font-heading text-dark mb-0 text-truncate" style="font-size: 0.92rem;" title="${cursoNome}">${cursoNome}</h6>
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.5rem;">
+                        <h6 style="font-family:var(--font-brand);font-size:var(--text-base);font-weight:600;color:var(--text-primary);margin:0;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;" title="${cursoNome}">${cursoNome}</h6>
                         ${badge}
                     </div>
-                    <div class="text-secondary small mb-2" style="font-size: 0.82rem;">
-                        <i class="bi bi-calendar-event text-primary me-1"></i> Horário: <strong>${dataHora}</strong>
+                    <div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-secondary);">
+                        <i class="bi bi-calendar2-event" style="margin-right:4px;color:var(--senac-blue-deep);"></i>${dataHora}
                     </div>
                 </div>
                 <div>
                     ${acoesHTML}
-                    <div id="msg-canc-${ag.id}" class="small text-center mt-1.5" style="font-size: 0.76rem;"></div>
+                    <div id="msg-canc-${ag.id}" style="font-family:var(--font-mono);font-size:11px;text-align:center;margin-top:4px;"></div>
                 </div>
             </div>
         </div>
